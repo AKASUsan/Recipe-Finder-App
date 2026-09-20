@@ -85,14 +85,7 @@ export default function Homepage() {
     }
     load();
   }, []);
-  useEffect(() => {
-    async function seed() {
-      await seedCategories();
-      await seedRecipes();
-      console.log("seed done");
-    }
-    seed();
-  }, []);
+  
   const categoryById = Object.fromEntries(categories.map((c) => [c.id, c]));
   const catOf = (recipe) => categoryById[recipe.categoryIds?.[0]];
 
