@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
 import SearchPage from "./screens/SearchPage";
+import FavoritesPage from "./screens/FavoritesPage"; //FavoritesPage mew
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -24,16 +25,15 @@ function BottomTabNavigator() {
           height: 64,
           paddingTop: 0,
           paddingBottom: 0,
-          backgroundColor: "transparent", 
+          backgroundColor: "transparent",
           borderRadius: 32,
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.6)",
           borderTopWidth: 1,
           elevation: 0,
-          overflow: "hidden", 
+          overflow: "hidden",
         },
         tabBarBackground: () => (
-          
           <BlurView
             intensity={40}
             tint="light"
@@ -43,11 +43,11 @@ function BottomTabNavigator() {
         tabBarItemStyle: {
           borderRadius: 50,
           marginVertical: 6,
-          marginHorizontal: 40,
+          marginHorizontal: 4,
           justifyContent: "center",
           overflow: "hidden",
         },
-        
+
         tabBarInactiveTintColor: "#8A7A6E",
         tabBarActiveBackgroundColor: "#FFF1E6",
         tabBarActiveTintColor: "#E08E79",
@@ -72,6 +72,16 @@ function BottomTabNavigator() {
           title: "Search",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTabs.Screen
+        name="Favorites"
+        component={FavoritesPage}
+        options={{
+          title: "Favorites",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart" size={size} color={color} />
           ),
         }}
       />
