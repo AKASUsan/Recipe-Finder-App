@@ -8,6 +8,8 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
+import SearchPage from "./screens/SearchPage";
+import FavoritesPage from "./screens/Favoritespage";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -24,11 +26,13 @@ function BottomTabNavigator() {
           paddingTop: 0,
           paddingBottom: 0,
           backgroundColor: "transparent",
+          backgroundColor: "transparent",
           borderRadius: 32,
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.6)",
           borderTopWidth: 1,
           elevation: 0,
+          overflow: "hidden",
           overflow: "hidden",
         },
         tabBarBackground: () => (
@@ -42,9 +46,11 @@ function BottomTabNavigator() {
           borderRadius: 50,
           marginVertical: 6,
           marginHorizontal: 4,
+          marginHorizontal: 4,
           justifyContent: "center",
           overflow: "hidden",
         },
+
 
         tabBarInactiveTintColor: "#8A7A6E",
         tabBarActiveBackgroundColor: "#FFF1E6",
