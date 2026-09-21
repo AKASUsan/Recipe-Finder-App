@@ -8,8 +8,6 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
-import SearchPage from "./screens/SearchPage";
-import FavoritesPage from "./screens/FavoritesPage"; //FavoritesPage mew
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
