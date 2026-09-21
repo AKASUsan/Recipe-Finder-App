@@ -8,6 +8,7 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
+import SearchPage from "./screens/SearchPage";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -66,7 +67,7 @@ function BottomTabNavigator() {
       />
       <BottomTabs.Screen
         name="Search"
-        component={Homepage}
+        component={SearchPage}
         options={{
           title: "Search",
           tabBarIcon: ({ color, size }) => (

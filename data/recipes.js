@@ -1,11 +1,19 @@
 import {
-  collection, addDoc, getDocs, query, where, orderBy, limit, doc, setDoc,
+  collection, addDoc, getDocs, query, where, orderBy, limit, doc, setDoc, updateDoc, increment,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
 async function fetchList(q) {
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export function getAllRecipes() {
+  return fetchList(collection(db, "recipes"));
+}
+
+export function incrementSearchCount(id) {
+  return updateDoc(doc(db, "recipes", id), { searchCount: increment(1) });
 }
 
 export async function addRecipe(recipe) {
