@@ -8,11 +8,14 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
+import RecipeDetailScreen from "./screens/RecipeDetailScreen";
+import CategoryRecipesScreen from "./screens/CategoryRecipesScreen";
 import SearchPage from "./screens/SearchPage";
 import FavoritesPage from "./screens/Favoritespage";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
+
 function BottomTabNavigator() {
   return (
     <BottomTabs.Navigator
@@ -109,6 +112,16 @@ export default function App() {
             name="Main"
             component={BottomTabNavigator}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="RecipeDetail"
+            component={RecipeDetailScreen}
+            options={({ route }) => ({ title: route.params.recipe.title })}
+          />
+          <Stack.Screen
+            name="CategoryRecipes"
+            component={CategoryRecipesScreen}
+            options={({ route }) => ({ title: route.params.category.title })}
           />
         </Stack.Navigator>
       </NavigationContainer>
