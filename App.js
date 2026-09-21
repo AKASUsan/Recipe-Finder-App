@@ -10,6 +10,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Homepage from "./screens/Homepage";
 import RecipeDetailScreen from "./screens/RecipeDetailScreen";
 import CategoryRecipesScreen from "./screens/CategoryRecipesScreen";
+import SearchPage from "./screens/SearchPage";
+import FavoritesPage from "./screens/FavoritesPage"; //FavoritesPage mew
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -44,7 +46,7 @@ function BottomTabNavigator() {
         tabBarItemStyle: {
           borderRadius: 50,
           marginVertical: 6,
-          marginHorizontal: 40,
+          marginHorizontal: 4,
           justifyContent: "center",
           overflow: "hidden",
         },
@@ -68,11 +70,21 @@ function BottomTabNavigator() {
       />
       <BottomTabs.Screen
         name="Search"
-        component={Homepage}
+        component={SearchPage}
         options={{
           title: "Search",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTabs.Screen
+        name="Favorites"
+        component={FavoritesPage}
+        options={{
+          title: "Favorites",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart" size={size} color={color} />
           ),
         }}
       />
