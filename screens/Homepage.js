@@ -1,27 +1,22 @@
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-  useWindowDimensions,
-  StyleSheet,
+  View, Text, ScrollView, Pressable, ActivityIndicator,
+  useWindowDimensions, StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
-import { getCategories } from "../data/categories";
+import { getCategories, seedCategories } from "../data/categories";
 import {
-  getTrendingRecipes,
-  getPopularRecipes,
-  getLatestRecipes,
+  getTrendingRecipes, getPopularRecipes, getLatestRecipes, seedRecipes,
 } from "../data/recipes";
-import { seedCategories } from "../data/categories";
-import { seedRecipes } from "../data/recipes";
 import CategoryStrip from "../components/CategoryStrip";
 import RecipeCard from "../components/RecipeCard";
+
+// true = ใส่ข้อมูลตัวอย่างลง Firestore ตอนเปิดแอป (ปกติให้เป็น false)
+const RUN_SEED = false;
 
 function greeting() {
   const h = new Date().getHours();
@@ -52,6 +47,7 @@ function Section({ title, icon, onSeeAll, children }) {
 }
 
 export default function Homepage() {
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const { width } = useWindowDimensions();
@@ -59,7 +55,6 @@ export default function Homepage() {
 
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
   const [trending, setTrending] = useState([]);
   const [popular, setPopular] = useState([]);
   const [latest, setLatest] = useState([]);
@@ -67,6 +62,11 @@ export default function Homepage() {
   useEffect(() => {
     async function load() {
       try {
+        if (RUN_SEED) {
+          await seedCategories();
+          await seedRecipes();
+          console.log("seed done");
+        }
         const [cats, t, p, l] = await Promise.all([
           getCategories(),
           getTrendingRecipes(),
@@ -85,9 +85,18 @@ export default function Homepage() {
     }
     load();
   }, []);
-  
+
   const categoryById = Object.fromEntries(categories.map((c) => [c.id, c]));
   const catOf = (recipe) => categoryById[recipe.categoryIds?.[0]];
+
+  function openRecipe(recipe) {
+    navigation.navigate("RecipeDetail", { recipe, category: catOf(recipe) });
+  }
+
+  function openCategory(id) {
+    const category = categoryById[id];
+    if (category) navigation.navigate("CategoryRecipes", { category });
+  }
 
   function renderCards(list, makeSubtitle) {
     return list.map((r) => (
@@ -97,7 +106,7 @@ export default function Homepage() {
         category={catOf(r)}
         width={cardWidth}
         subtitle={makeSubtitle(r)}
-        onPress={() => {}} // TODO: เปิดหน้ารายละเอียดสูตร
+        onPress={() => openRecipe(r)}
       />
     ));
   }
@@ -126,8 +135,8 @@ export default function Homepage() {
       <View style={{ marginTop: 16 }}>
         <CategoryStrip
           categories={categories}
-          selectedId={selectedId}
-          onSelect={setSelectedId} 
+          selectedId={null}
+          onSelect={openCategory}
         />
       </View>
 
@@ -138,7 +147,7 @@ export default function Homepage() {
       <Section title="Popular recipes" onSeeAll={() => {}}>
         {renderCards(
           popular,
-          (r) => `${r.duration ?? "-"} min · ${r.rating?.toFixed?.(1) ?? "-"}`,
+          (r) => `${r.duration ?? "-"} min · ${r.rating?.toFixed?.(1) ?? "-"}`
         )}
       </Section>
 
@@ -151,21 +160,12 @@ export default function Homepage() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFF8F2",
-  },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF8F2" },
   pad: { paddingHorizontal: 16 },
   hello: { fontSize: 12, color: "#8A7A6E" },
   headline: { fontSize: 22, fontWeight: "500", color: "#4A3728", marginTop: 2 },
   section: { marginTop: 22, paddingHorizontal: 16 },
-  sectionHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   sectionTitle: { fontSize: 16, fontWeight: "500", color: "#4A3728", flex: 1 },
   seeAll: { fontSize: 12, fontWeight: "500", color: "#E08E79" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 10 },

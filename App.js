@@ -8,9 +8,12 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 
 import Homepage from "./screens/Homepage";
+import RecipeDetailScreen from "./screens/RecipeDetailScreen";
+import CategoryRecipesScreen from "./screens/CategoryRecipesScreen";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
+
 function BottomTabNavigator() {
   return (
     <BottomTabs.Navigator
@@ -23,16 +26,15 @@ function BottomTabNavigator() {
           height: 64,
           paddingTop: 0,
           paddingBottom: 0,
-          backgroundColor: "transparent", 
+          backgroundColor: "transparent",
           borderRadius: 32,
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.6)",
           borderTopWidth: 1,
           elevation: 0,
-          overflow: "hidden", 
+          overflow: "hidden",
         },
         tabBarBackground: () => (
-          
           <BlurView
             intensity={40}
             tint="light"
@@ -46,7 +48,7 @@ function BottomTabNavigator() {
           justifyContent: "center",
           overflow: "hidden",
         },
-        
+
         tabBarInactiveTintColor: "#8A7A6E",
         tabBarActiveBackgroundColor: "#FFF1E6",
         tabBarActiveTintColor: "#E08E79",
@@ -94,6 +96,16 @@ export default function App() {
             name="Main"
             component={BottomTabNavigator}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="RecipeDetail"
+            component={RecipeDetailScreen}
+            options={({ route }) => ({ title: route.params.recipe.title })}
+          />
+          <Stack.Screen
+            name="CategoryRecipes"
+            component={CategoryRecipesScreen}
+            options={({ route }) => ({ title: route.params.category.title })}
           />
         </Stack.Navigator>
       </NavigationContainer>
