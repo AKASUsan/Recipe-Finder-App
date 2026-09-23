@@ -1,25 +1,26 @@
+import { useContext } from "react";
 import { View, Text, Image, ScrollView, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const cap = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
+import IconButton from "../components/IconButton";
+import RecipeMetaRow from "../components/RecipeMetaRow";
+import RecipeTagsRow from "../components/RecipeTagsRow";
+import { FavoritesContext } from "../store/context/favorites-context";
 
 export default function RecipeDetailScreen({ route }) {
   const { recipe, category } = route.params;
   const insets = useSafeAreaInsets();
+  const favoritesCtx = useContext(FavoritesContext);
 
-  const meta = [
-    recipe.duration != null && { icon: "time-outline", text: `${recipe.duration} min` },
-    recipe.complexity && { icon: "speedometer-outline", text: cap(recipe.complexity) },
-    recipe.affordability && { icon: "cash-outline", text: cap(recipe.affordability) },
-  ].filter(Boolean);
+  const isFavorite = favoritesCtx.ids.includes(recipe.id);
 
-  const tags = [
-    recipe.isVegan && "Vegan",
-    recipe.isVegetarian && "Vegetarian",
-    recipe.isGlutenFree && "Gluten-free",
-    recipe.isLactoseFree && "Lactose-free",
-  ].filter(Boolean);
+  function toggleFavorite() {
+    if (isFavorite) {
+      favoritesCtx.removeFavorite(recipe.id);
+    } else {
+      favoritesCtx.addFavorite(recipe.id);
+    }
+  }
 
   return (
     <ScrollView
@@ -35,26 +36,17 @@ export default function RecipeDetailScreen({ route }) {
       </View>
 
       <View style={styles.pad}>
-        <Text style={styles.title}>{recipe.title}</Text>
-
-        <View style={styles.row}>
-          {meta.map((m) => (
-            <View key={m.text} style={styles.chip}>
-              <Ionicons name={m.icon} size={14} color="#E08E79" />
-              <Text style={styles.chipText}>{m.text}</Text>
-            </View>
-          ))}
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { flex: 1 }]}>{recipe.title}</Text>
+          <IconButton
+            icon={isFavorite ? "bookmark" : "bookmark-outline"}
+            color={isFavorite ? "#E08E79" : "#4A3728"}
+            onPress={toggleFavorite}
+          />
         </View>
 
-        {tags.length > 0 && (
-          <View style={styles.row}>
-            {tags.map((t) => (
-              <View key={t} style={styles.tag}>
-                <Text style={styles.tagText}>{t}</Text>
-              </View>
-            ))}
-          </View>
-        )}
+        <RecipeMetaRow recipe={recipe} />
+        <RecipeTagsRow recipe={recipe} />
 
         <Text style={styles.heading}>Ingredients</Text>
         {(recipe.ingredients ?? []).map((item, i) => (
@@ -83,16 +75,8 @@ const styles = StyleSheet.create({
   hero: { height: 240, alignItems: "center", justifyContent: "center" },
   heroImage: { width: "100%", height: "100%" },
   pad: { padding: 16 },
+  titleRow: { flexDirection: "row", alignItems: "center" },
   title: { fontSize: 24, fontWeight: "500", color: "#4A3728" },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
-  chip: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    backgroundColor: "#FFFFFF", borderWidth: 0.5, borderColor: "#E6E0DA",
-    borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5,
-  },
-  chipText: { fontSize: 12, color: "#4A3728" },
-  tag: { backgroundColor: "#FFF1E6", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5 },
-  tagText: { fontSize: 12, color: "#E08E79", fontWeight: "500" },
   heading: { fontSize: 18, fontWeight: "500", color: "#4A3728", marginTop: 24, marginBottom: 8 },
   ingredient: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 },
   bullet: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#E08E79" },
