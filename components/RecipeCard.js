@@ -22,7 +22,7 @@ export default function RecipeCard({
             source={{ uri: recipe.imageUrl }}
             style={styles.image}
             resizeMode="cover"
-            onError={() => setImageFailed(true)} // โหลดรูปไม่ได้ ให้กลับไปใช้ไอคอน
+            onError={() => setImageFailed(true)} 
           />
         ) : (
           <Ionicons

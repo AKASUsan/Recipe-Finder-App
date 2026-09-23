@@ -1,21 +1,22 @@
 import { collection, doc, setDoc, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
+import Category from "../models/category";
 
-const DEFAULT_CATEGORIES = [
-  { id: "c1", title: "Italian", color: "#f5428d", icon: "pizza-outline" },
-  { id: "c2", title: "Quick & Easy", color: "#f54242", icon: "flash-outline" },
-  { id: "c3", title: "Hamburgers", color: "#f5a442", icon: "fast-food-outline" },
-  { id: "c4", title: "German", color: "#f5d142", icon: "beer-outline" },
-  { id: "c5", title: "Light & Lovely", color: "#368dff", icon: "leaf-outline" },
-  { id: "c6", title: "Exotic", color: "#41d95d", icon: "earth-outline" },
-  { id: "c7", title: "Breakfast", color: "#9eecff", icon: "cafe-outline" },
-  { id: "c8", title: "Asian", color: "#b9ffb0", icon: "restaurant-outline" },
-  { id: "c9", title: "French", color: "#ffc7ff", icon: "wine-outline" },
-  { id: "c10", title: "Summer", color: "#47fced", icon: "sunny-outline" },
+export const CATEGORIES = [
+  new Category("c1", "Italian", "#f5428d", "pizza-outline"),
+  new Category("c2", "Quick & Easy", "#f54242", "flash-outline"),
+  new Category("c3", "Hamburgers", "#f5a442", "fast-food-outline"),
+  new Category("c4", "German", "#f5d142", "beer-outline"),
+  new Category("c5", "Light & Lovely", "#368dff", "leaf-outline"),
+  new Category("c6", "Exotic", "#41d95d", "earth-outline"),
+  new Category("c7", "Breakfast", "#9eecff", "cafe-outline"),
+  new Category("c8", "Asian", "#b9ffb0", "restaurant-outline"),
+  new Category("c9", "French", "#ffc7ff", "wine-outline"),
+  new Category("c10", "Summer", "#47fced", "sunny-outline"),
 ];
 
 export async function seedCategories() {
-  for (const { id, ...data } of DEFAULT_CATEGORIES) {
+  for (const { id, ...data } of CATEGORIES) {
     await setDoc(doc(db, "categories", id), data);
   }
 }
