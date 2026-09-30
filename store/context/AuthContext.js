@@ -6,6 +6,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "../../data/firebase";
+import { ensureUserDoc } from "../../data/users";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -18,12 +19,15 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
+      // Make sure every signed-in account has a users/{uid} profile document.
+      if (u) ensureUserDoc(u).catch((e) => console.warn("ensureUserDoc:", e));
     });
     return unsub;
   }, []);
 
   const login = (email, pw) => signInWithEmailAndPassword(auth, email, pw);
-  const register = (email, pw) => createUserWithEmailAndPassword(auth, email, pw);
+  const register = (email, pw) =>
+    createUserWithEmailAndPassword(auth, email, pw);
   const logout = () => signOut(auth);
 
   return (
