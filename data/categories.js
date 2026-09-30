@@ -16,7 +16,10 @@ export const CATEGORIES = [
 ];
 
 export async function seedCategories() {
-  for (const { id, ...data } of CATEGORIES) {
+  const snapshot = await getDocs(collection(db, "categories"));
+  if (!snapshot.empty) return; // มีข้อมูลอยู่แล้ว ไม่ต้อง seed ซ้ำ
+
+  for (const { id, ...data } of DEFAULT_CATEGORIES) {
     await setDoc(doc(db, "categories", id), data);
   }
 }

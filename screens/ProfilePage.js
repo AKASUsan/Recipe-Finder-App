@@ -1,30 +1,28 @@
-import { useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import {
   View,
   Text,
   Image,
   Pressable,
   FlatList,
-  Alert,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../store/context/AuthContext";
+import { FavoritesContext } from "../store/context/favorites-context";
+import { getMyRecipes, getRecipesByIds } from "../data/recipes";
+import { getUser } from "../data/users";
+import AccountSheet from "../components/AccountSheet";
 
 const CREAM = "#FFF1E6";
 const CORAL = "#E08E79";
 const PEACH = "#F3D5C3";
 const BROWN = "#4A3728";
 const MUTED = "#8A7A6E";
-
-// TODO: replace these with your real data (data/favorites.js or Firestore).
-// Each item is expected to look like: { id, title, image? }
-const favorites = [];
-const myRecipes = [];
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -90,7 +88,10 @@ function GuestView() {
 
 function Tab({ icon, label, active, onPress }) {
   return (
-    <Pressable onPress={onPress} style={[styles.tab, active && styles.tabActive]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.tab, active && styles.tabActive]}
+    >
       <Ionicons name={icon} size={18} color={active ? CORAL : MUTED} />
       <Text style={[styles.tabText, active && styles.tabTextActive]}>
         {label}
@@ -99,9 +100,18 @@ function Tab({ icon, label, active, onPress }) {
   );
 }
 
+function Stat({ value, label, onPress }) {
+  return (
+    <Pressable onPress={onPress} disabled={!onPress} style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
 function RecipeCard({ recipe, width, onPress }) {
-  const source =
-    typeof recipe.image === "string" ? { uri: recipe.image } : recipe.image;
+  const uri = recipe.imageUrl || recipe.image;
+  const source = typeof uri === "string" ? { uri } : uri;
 
   return (
     <Pressable onPress={onPress} style={[styles.card, { width }]}>
@@ -124,20 +134,35 @@ function LoggedInView({ user }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { logout } = useAuth();
+  const favoritesCtx = useContext(FavoritesContext);
+
   const [tab, setTab] = useState("favorites");
+  const [favorites, setFavorites] = useState([]);
+  const [myRecipes, setMyRecipes] = useState([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
+
+  // Reload every time this tab comes into focus, so new recipes and
+  // favorites show up right away.
+  useFocusEffect(
+    useCallback(() => {
+      getMyRecipes()
+        .then(setMyRecipes)
+        .catch(() => {});
+      getRecipesByIds(favoritesCtx.ids)
+        .then(setFavorites)
+        .catch(() => {});
+      getUser(user.uid)
+        .then(setProfile)
+        .catch(() => {});
+    }, [favoritesCtx.ids, user.uid]),
+  );
 
   const name = user.displayName || user.email?.split("@")[0] || "Chef";
   const initial = name.charAt(0).toUpperCase();
 
   const cardWidth = (width - 44 - 12) / 2;
   const data = tab === "favorites" ? favorites : myRecipes;
-
-  const openSettings = () => {
-    Alert.alert("Account", user.email, [
-      { text: "Cancel", style: "cancel" },
-      { text: "Log Out", style: "destructive", onPress: logout },
-    ]);
-  };
 
   const header = (
     <View>
@@ -161,7 +186,7 @@ function LoggedInView({ user }) {
       <View style={[styles.topBar, { marginTop: insets.top }]}>
         <Text style={styles.topTitle}>Profile</Text>
         <Pressable
-          onPress={openSettings}
+          onPress={() => setSheetOpen(true)}
           hitSlop={12}
           style={styles.settings}
           accessibilityLabel="Account settings"
@@ -178,6 +203,32 @@ function LoggedInView({ user }) {
 
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.email}>{user.email}</Text>
+
+      <View style={styles.stats}>
+        <Stat value={myRecipes.length} label="Recipes" />
+        <Stat
+          value={profile?.followersCount ?? 0}
+          label="Followers"
+          onPress={() =>
+            navigation.navigate("FollowList", {
+              uid: user.uid,
+              tab: "followers",
+              name,
+            })
+          }
+        />
+        <Stat
+          value={profile?.followingCount ?? 0}
+          label="Following"
+          onPress={() =>
+            navigation.navigate("FollowList", {
+              uid: user.uid,
+              tab: "following",
+              name,
+            })
+          }
+        />
+      </View>
 
       {/* TODO: hook up an edit-profile screen */}
       <Pressable style={styles.editPill} onPress={() => {}}>
@@ -202,36 +253,48 @@ function LoggedInView({ user }) {
   );
 
   return (
-    <FlatList
-      style={styles.screen}
-      data={data}
-      key={tab}
-      numColumns={2}
-      keyExtractor={(item) => String(item.id ?? item.title)}
-      ListHeaderComponent={header}
-      columnWrapperStyle={styles.row}
-      contentContainerStyle={styles.listContent}
-      showsVerticalScrollIndicator={false}
-      renderItem={({ item }) => (
-        <RecipeCard
-          recipe={item}
-          width={cardWidth}
-          onPress={() => navigation.navigate("RecipeDetail", { recipe: item })}
-        />
-      )}
-      ListEmptyComponent={
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>
-            {tab === "favorites" ? "No favorites yet" : "No recipes yet"}
-          </Text>
-          <Text style={styles.emptyText}>
-            {tab === "favorites"
-              ? "Tap the heart on a recipe to save it here."
-              : "Tap + to add your first recipe."}
-          </Text>
-        </View>
-      }
-    />
+    <>
+      <FlatList
+        style={styles.screen}
+        data={data}
+        key={tab}
+        numColumns={2}
+        keyExtractor={(item) => String(item.id ?? item.title)}
+        ListHeaderComponent={header}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <RecipeCard
+            recipe={item}
+            width={cardWidth}
+            onPress={() =>
+              navigation.navigate("RecipeDetail", { recipe: item })
+            }
+          />
+        )}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>
+              {tab === "favorites" ? "No favorites yet" : "No recipes yet"}
+            </Text>
+            <Text style={styles.emptyText}>
+              {tab === "favorites"
+                ? "Tap the heart on a recipe to save it here."
+                : "Tap + to add your first recipe."}
+            </Text>
+          </View>
+        }
+      />
+
+      <AccountSheet
+        visible={sheetOpen}
+        name={name}
+        email={user.email}
+        onClose={() => setSheetOpen(false)}
+        onLogout={logout}
+      />
+    </>
   );
 }
 
@@ -338,6 +401,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 2,
   },
+  stats: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 32,
+    marginTop: 14,
+  },
+  stat: { alignItems: "center" },
+  statValue: { fontSize: 17, fontWeight: "700", color: BROWN },
+  statLabel: { fontSize: 12, color: MUTED, marginTop: 1 },
   editPill: {
     alignSelf: "center",
     marginTop: 12,
