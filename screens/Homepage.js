@@ -1,16 +1,25 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  View, Text, ScrollView, Pressable, ActivityIndicator,
-  useWindowDimensions, StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  useWindowDimensions,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import { getCategories, seedCategories } from "../data/categories";
 import {
-  getTrendingRecipes, getPopularRecipes, getLatestRecipes, seedRecipes,
+  getTrendingRecipes,
+  getPopularRecipes,
+  getLatestRecipes,
+  seedRecipes,
+  backfillRecipeCounts,
 } from "../data/recipes";
 import CategoryStrip from "../components/CategoryStrip";
 import RecipeCard from "../components/RecipeCard";
@@ -58,33 +67,42 @@ export default function Homepage() {
   const [trending, setTrending] = useState([]);
   const [popular, setPopular] = useState([]);
   const [latest, setLatest] = useState([]);
+  const seeded = useRef(false);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        if (RUN_SEED) {
-          await seedCategories();
-          await seedRecipes();
-          console.log("seed done");
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      async function load() {
+        try {
+          if (RUN_SEED && !seeded.current) {
+            seeded.current = true;
+            await seedCategories();
+            await seedRecipes();
+            await backfillRecipeCounts();
+          }
+          const [cats, t, p, l] = await Promise.all([
+            getCategories(),
+            getTrendingRecipes(),
+            getPopularRecipes(),
+            getLatestRecipes(),
+          ]);
+          if (!active) return;
+          setCategories(cats);
+          setTrending(t);
+          setPopular(p);
+          setLatest(l);
+        } catch (e) {
+          console.warn("Failed to load data:", e);
+        } finally {
+          if (active) setLoading(false);
         }
-        const [cats, t, p, l] = await Promise.all([
-          getCategories(),
-          getTrendingRecipes(),
-          getPopularRecipes(),
-          getLatestRecipes(),
-        ]);
-        setCategories(cats);
-        setTrending(t);
-        setPopular(p);
-        setLatest(l);
-      } catch (e) {
-        console.warn("Failed to load data:", e);
-      } finally {
-        setLoading(false);
       }
-    }
-    load();
-  }, []);
+      load();
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   const categoryById = Object.fromEntries(categories.map((c) => [c.id, c]));
   const catOf = (recipe) => categoryById[recipe.categoryIds?.[0]];
@@ -141,13 +159,13 @@ export default function Homepage() {
       </View>
 
       <Section title="Trending now" icon="flame">
-        {renderCards(trending, (r) => `${formatCount(r.searchCount)} searches`)}
+        {renderCards(trending, (r) => `${formatCount(r.viewCount)} views`)}
       </Section>
 
       <Section title="Popular recipes" onSeeAll={() => {}}>
         {renderCards(
           popular,
-          (r) => `${r.duration ?? "-"} min · ${r.rating?.toFixed?.(1) ?? "-"}`
+          (r) => `♥ ${formatCount(r.favoriteCount)} · ${r.duration ?? "-"} min`,
         )}
       </Section>
 
@@ -160,12 +178,21 @@ export default function Homepage() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF8F2" },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF8F2",
+  },
   pad: { paddingHorizontal: 16 },
   hello: { fontSize: 12, color: "#8A7A6E" },
   headline: { fontSize: 22, fontWeight: "500", color: "#4A3728", marginTop: 2 },
   section: { marginTop: 22, paddingHorizontal: 16 },
-  sectionHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  sectionHead: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   sectionTitle: { fontSize: 16, fontWeight: "500", color: "#4A3728", flex: 1 },
   seeAll: { fontSize: 12, fontWeight: "500", color: "#E08E79" },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 10 },

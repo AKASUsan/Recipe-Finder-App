@@ -3,7 +3,8 @@ import {
   collection, doc, setDoc, deleteDoc, onSnapshot,
 } from "firebase/firestore";
 import { db } from "../../data/firebase";
-import { useAuth } from "./AuthContext"; // ปรับ path ให้ตรงกับที่คุณเก็บ AuthContext
+import { adjustFavoriteCount } from "../../data/recipes";
+import { useAuth } from "./AuthContext"; 
 
 export const FavoritesContext = createContext({
   ids: [],
@@ -16,13 +17,11 @@ function FavoritesContextProvider({ children }) {
   const [favoriteMealIds, setFavoriteMealIds] = useState([]);
 
   useEffect(() => {
-    // ถ้ายังไม่ login ให้เคลียร์รายการโปรด
     if (!user) {
       setFavoriteMealIds([]);
       return;
     }
 
-    // ฟังการเปลี่ยนแปลงแบบ real-time เฉพาะของ user คนนี้
     const favoritesRef = collection(db, "users", user.uid, "favorites");
     const unsubscribe = onSnapshot(favoritesRef, (snapshot) => {
       const ids = snapshot.docs.map((d) => d.id);
@@ -34,16 +33,27 @@ function FavoritesContextProvider({ children }) {
 
   async function addFavorite(id) {
     if (!user) return;
+    if (favoriteMealIds.includes(id)) return; 
+
     await setDoc(doc(db, "users", user.uid, "favorites", id), {
       mealId: id,
       addedAt: Date.now(),
     });
-    // ไม่ต้อง setFavoriteMealIds เอง เพราะ onSnapshot จะอัปเดตให้อัตโนมัติ
+
+    adjustFavoriteCount(id, 1).catch((e) =>
+      console.warn("Failed to increment favorite count:", e)
+    );
   }
 
   async function removeFavorite(id) {
     if (!user) return;
+    if (!favoriteMealIds.includes(id)) return; 
+
     await deleteDoc(doc(db, "users", user.uid, "favorites", id));
+
+    adjustFavoriteCount(id, -1).catch((e) =>
+      console.warn("Failed to decrement favorite count:", e)
+    );
   }
 
   const value = {
