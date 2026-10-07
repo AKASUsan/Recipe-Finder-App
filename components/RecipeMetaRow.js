@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { META_FIELDS } from "../models/recipeMeta";
@@ -11,7 +12,7 @@ export default function RecipeMetaRow({ recipe }) {
     <View style={styles.row}>
       {items.map((field) => (
         <View key={field.key} style={styles.chip}>
-          <Ionicons name={field.icon} size={14} color="#E08E79" />
+          <Ionicons name={field.icon} size={14} color={colors.accent} />
           <Text style={styles.chipText}>{field.label(recipe)}</Text>
         </View>
       ))}
@@ -25,12 +26,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  chipText: { fontSize: 12, color: "#4A3728" },
+  chipText: { fontSize: 12, color: colors.ink },
 });

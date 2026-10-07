@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Animated, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -6,9 +7,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const ToastContext = createContext(null);
 
 const VARIANTS = {
-  success: { icon: "checkmark", bg: "#E08E79" },
-  error: { icon: "alert", bg: "#C0563F" },
-  info: { icon: "information", bg: "#8A7A6E" },
+  success: { icon: "checkmark", bg: colors.accent },
+  error: { icon: "alert", bg: colors.accentDeep },
+  info: { icon: "information", bg: colors.muted },
 };
 
 export function ToastProvider({ children }) {
@@ -56,7 +57,7 @@ export function ToastProvider({ children }) {
         >
           <Pressable onPress={hide} style={styles.toast}>
             <View style={[styles.iconWrap, { backgroundColor: v.bg }]}>
-              <Ionicons name={v.icon} size={16} color="#FFFFFF" />
+              <Ionicons name={v.icon} size={16} color={colors.white} />
             </View>
             <View style={styles.texts}>
               <Text style={styles.title} numberOfLines={1}>{toast.title}</Text>
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   wrap: { position: "absolute", left: 16, right: 16, zIndex: 999, elevation: 12 },
   toast: {
     flexDirection: "row", alignItems: "center", gap: 12,
-    backgroundColor: "#4A3728", borderRadius: 16,
+    backgroundColor: colors.ink, borderRadius: 16,
     paddingVertical: 12, paddingHorizontal: 14,
   },
   iconWrap: {
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
   texts: { flex: 1 },
-  title: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
-  message: { color: "#E9D9CC", fontSize: 12, marginTop: 2, lineHeight: 16 },
-  action: { color: "#F5C6B0", fontSize: 14, fontWeight: "600" },
+  title: { color: colors.white, fontSize: 14, fontWeight: "600" },
+  message: { color: colors.line, fontSize: 12, marginTop: 2, lineHeight: 16 },
+  action: { color: colors.sage, fontSize: 14, fontWeight: "600" },
 });

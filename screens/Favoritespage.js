@@ -1,8 +1,11 @@
+import { colors } from "../theme";
 import { useContext, useEffect, useState } from "react";
 import {
-  View, Text, StyleSheet, FlatList, ActivityIndicator, useWindowDimensions,
+  View, Text, StyleSheet, FlatList, ActivityIndicator, useWindowDimensions, Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getAllRecipes } from "../data/recipes";
 import RecipeCard from "../components/RecipeCard";
 import { FavoritesContext } from "../store/context/favorites-context";
@@ -11,6 +14,7 @@ import { useAuth } from "../store/context/AuthContext";
 export default function FavoritesScreen() {
   const { user } = useAuth();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const favoriteMealsCtx = useContext(FavoritesContext);
   const { width: screenWidth } = useWindowDimensions();
 
@@ -56,44 +60,49 @@ export default function FavoritesScreen() {
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>My Favorites</Text>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.emptyIcon}><Ionicons name="bookmark-outline" size={31} color={colors.accent} /></View>
+        <Text style={styles.title}>Your little cookbook.</Text>
         <Text style={styles.description}>
-          Please log in to see your favorites.
+          Log in to keep all your favorite recipes in one place.
         </Text>
+        <Pressable style={styles.action} onPress={() => navigation.navigate("Login", { mode: "login" })}><Text style={styles.actionText}>Log in</Text><Ionicons name="arrow-forward" size={16} color={colors.white} /></Pressable>
       </View>
     );
   }
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#4A3728" />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={colors.ink} />
       </View>
     );
   }
 
   if (favoriteMeals.length === 0) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>My Favorites</Text>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.emptyIcon}><Ionicons name="heart-outline" size={31} color={colors.accent} /></View>
+        <Text style={styles.title}>No favorites yet.</Text>
         <Text style={styles.description}>
-          Your saved recipes will appear here.
+          Save a recipe you love and it will live right here.
         </Text>
+        <Pressable style={styles.action} onPress={() => navigation.navigate("Search")}><Text style={styles.actionText}>Explore recipes</Text><Ionicons name="arrow-forward" size={16} color={colors.white} /></Pressable>
       </View>
     );
   }
 
   return (
-    <View style={styles.screen}>
-      <Text style={styles.title}>My Favorites</Text>
+    <View style={[styles.screen, { paddingTop: insets.top + 20 }]}>
+      <Text style={styles.eyebrow}>YOUR SAVED COLLECTION</Text>
+      <Text style={styles.title}>Made to revisit.</Text>
       <FlatList
         data={favoriteMeals}
         keyExtractor={(item) => item.id}
         renderItem={renderMealItem}
         numColumns={2}
         columnWrapperStyle={{ gap: GAP }}
-        contentContainerStyle={{ gap: GAP, paddingHorizontal: H_PADDING, paddingBottom: 24 }}
+        contentContainerStyle={{ gap: GAP, paddingHorizontal: H_PADDING, paddingBottom: 120 }}
       />
     </View>
   );
@@ -102,27 +111,31 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#FFF8F2",
-    paddingTop: 16,
+    backgroundColor: colors.background,
+    paddingTop: 20,
   },
   container: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
-    backgroundColor: "#FFF8F2",
+    backgroundColor: colors.background,
   },
   title: {
-    color: "#4A3728",
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 12,
-    paddingHorizontal: 16,
+    color: colors.ink,
+    fontSize: 28,
+    fontWeight: "800",
+    marginBottom: 18,
+    paddingHorizontal: 20,
   },
+  eyebrow: { color: colors.accent, fontSize: 10, fontWeight: "800", letterSpacing: 1.5, marginLeft: 20, marginBottom: 4 },
+  emptyIcon: { width: 72, height: 72, borderRadius: 24, backgroundColor: colors.accentSoft, alignItems: "center", justifyContent: "center", marginBottom: 18 },
+  action: { backgroundColor: colors.forest, borderRadius: 16, paddingVertical: 13, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 10, marginTop: 22 },
+  actionText: { color: colors.white, fontWeight: "800", fontSize: 13 },
   description: {
-    color: "#8A7A6E",
+    color: colors.muted,
     fontSize: 14,
-    marginTop: 8,
+    marginTop: 2,
     textAlign: "center",
   },
 });

@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useEffect, useState } from "react";
 import {
   View, Text, Image, Pressable, FlatList, ActivityIndicator,
@@ -9,9 +10,9 @@ import FollowButton from "../components/FollowButton";
 import { auth } from "../data/firebase";
 import { getUser, getRecipesByAuthor } from "../data/users";
 
-const CORAL = "#E08E79";
-const BROWN = "#4A3728";
-const MUTED = "#8A7A6E";
+const CORAL = colors.accent;
+const BROWN = colors.ink;
+const MUTED = colors.muted;
 
 function Stat({ value, label, onPress }) {
   return (
@@ -124,11 +125,11 @@ export default function UserProfileScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF8F2" },
+  screen: { flex: 1, backgroundColor: colors.background },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background },
   header: { alignItems: "center", paddingTop: 24, paddingHorizontal: 16, gap: 10 },
   avatar: {
-    width: 84, height: 84, borderRadius: 42, backgroundColor: "#F3D5C3",
+    width: 84, height: 84, borderRadius: 42, backgroundColor: colors.accentSoft,
     alignItems: "center", justifyContent: "center",
   },
   avatarText: { fontSize: 34, fontWeight: "600", color: CORAL },
@@ -142,9 +143,9 @@ const styles = StyleSheet.create({
     marginTop: 18, marginBottom: 4,
   },
   row: { gap: 12, paddingHorizontal: 16, marginBottom: 12, marginTop: 8 },
-  card: { backgroundColor: "#FFFFFF", borderRadius: 16, overflow: "hidden" },
+  card: { backgroundColor: colors.white, borderRadius: 16, overflow: "hidden" },
   cardImage: { width: "100%", height: 100 },
-  cardImageEmpty: { backgroundColor: "#F9DDCB", alignItems: "center", justifyContent: "center" },
+  cardImageEmpty: { backgroundColor: colors.surfaceAlt, alignItems: "center", justifyContent: "center" },
   cardTitle: { fontSize: 14, fontWeight: "600", color: BROWN },
   cardMeta: { fontSize: 12, color: MUTED, marginTop: 2 },
   empty: { textAlign: "center", color: MUTED, fontSize: 13, paddingTop: 24 },

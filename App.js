@@ -1,3 +1,4 @@
+import { colors } from "./theme";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View, Text, Pressable, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -35,10 +36,10 @@ function AddTabButton({ onPress }) {
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel="Add recipe"
-      style={styles.addWrapper}
+      style={({ pressed }) => [styles.addWrapper, pressed && { transform: [{ scale: 0.92 }] }]}
     >
       <View style={styles.addButton}>
-        <Ionicons name="add" size={30} color="#FFFFFF" />
+        <Ionicons name="add" size={30} color={colors.white} />
       </View>
     </Pressable>
   );
@@ -50,7 +51,7 @@ function TabLabel({ focused, children }) {
       <Text
         style={[
           styles.label,
-          { color: focused ? "#FFB8A3" : "#E3D5C9" },
+          { color: focused ? colors.white : colors.sage },
           focused && styles.labelActive,
         ]}
       >
@@ -72,7 +73,7 @@ function TabBarBackground() {
         style={[
           StyleSheet.absoluteFill,
           {
-            backgroundColor: `rgb(55, 53, 62, ${isIOS ? 0.6 : 0.88})`,
+            backgroundColor: isIOS ? "rgba(20, 57, 47, 0.82)" : colors.forest,
           },
         ]}
       />
@@ -95,7 +96,7 @@ function BottomTabNavigator() {
           backgroundColor: "transparent",
           borderRadius: 32,
           borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.12)",
+          borderColor: "rgba(255, 255, 255, 0.16)",
           borderTopWidth: 1,
           elevation: 0,
           overflow: "hidden",
@@ -111,11 +112,12 @@ function BottomTabNavigator() {
           justifyContent: "center",
           overflow: "hidden",
         },
-        tabBarInactiveTintColor: "#E3D5C9",
+        tabBarInactiveTintColor: colors.sage,
         tabBarActiveBackgroundColor: "transparent",
-        tabBarActiveTintColor: "#FFB8A3",
-        headerStyle: { backgroundColor: "#FFF1E6" },
-        headerTintColor: "#4A3728",
+        tabBarActiveTintColor: colors.white,
+        headerStyle: { backgroundColor: colors.background },
+        headerTintColor: colors.ink,
+        headerTitleStyle: { fontWeight: "700" },
       }}
     >
       <BottomTabs.Screen
@@ -123,6 +125,7 @@ function BottomTabNavigator() {
         component={Homepage}
         options={{
           title: "Home",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -133,6 +136,7 @@ function BottomTabNavigator() {
         component={SearchPage}
         options={{
           title: "Search",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" size={size} color={color} />
           ),
@@ -152,6 +156,7 @@ function BottomTabNavigator() {
         component={FavoritesPage}
         options={{
           title: "Favorites",
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
           ),
@@ -176,15 +181,16 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="auto" />
+        <StatusBar style="dark" />
         <FavoritesContextProvider>
           <ToastProvider>
             <NavigationContainer>
               <Stack.Navigator
                 screenOptions={{
-                  headerStyle: { backgroundColor: "#FFF1E6" },
-                  headerTintColor: "#4A3728",
-                  contentStyle: { backgroundColor: "#FFF1E6" },
+                  headerStyle: { backgroundColor: colors.background },
+                  headerTintColor: colors.ink,
+                  contentStyle: { backgroundColor: colors.background },
+                  headerTitleStyle: { fontWeight: "700" },
                 }}
               >
                 <Stack.Screen
@@ -259,7 +265,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#E08E79",
+    backgroundColor: colors.accent,
+    borderWidth: 3,
+    borderColor: colors.forest,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -273,5 +281,5 @@ const styles = StyleSheet.create({
     marginTop: 3,
     backgroundColor: "transparent",
   },
-  dotActive: { backgroundColor: "#E08E79" },
+  dotActive: { backgroundColor: colors.accent },
 });

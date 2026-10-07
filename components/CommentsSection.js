@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useEffect, useState } from "react";
 import {
   View,
@@ -81,7 +82,7 @@ export default function CommentsSection({ recipeId }) {
           value={text}
           onChangeText={setText}
           placeholder="Add a comment…"
-          placeholderTextColor="#B5A79B"
+          placeholderTextColor={colors.subtle}
           multiline
         />
         <Pressable
@@ -98,7 +99,7 @@ export default function CommentsSection({ recipeId }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#E08E79" style={{ marginTop: 16 }} />
+        <ActivityIndicator color={colors.accent} style={{ marginTop: 16 }} />
       ) : comments.length === 0 ? (
         <Text style={styles.empty}>
           No comments yet. Be the first to share your thoughts.
@@ -120,7 +121,7 @@ export default function CommentsSection({ recipeId }) {
             </View>
             {c.authorId === uid && (
               <Pressable hitSlop={8} onPress={() => confirmDelete(c.id)}>
-                <Ionicons name="trash-outline" size={18} color="#B5A79B" />
+                <Ionicons name="trash-outline" size={18} color={colors.subtle} />
               </Pressable>
             )}
           </View>
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 18,
     fontWeight: "500",
-    color: "#4A3728",
+    color: colors.ink,
     marginBottom: 12,
   },
   inputRow: {
@@ -146,27 +147,27 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: "#4A3728",
+    color: colors.ink,
     maxHeight: 100,
   },
   send: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: "#E08E79",
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
   },
   empty: {
     fontSize: 13,
-    color: "#8A7A6E",
+    color: colors.muted,
     textAlign: "center",
     paddingVertical: 16,
   },
@@ -180,13 +181,13 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#F5D9CF",
+    backgroundColor: colors.accentSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { color: "#E08E79", fontWeight: "500" },
+  avatarText: { color: colors.accent, fontWeight: "500" },
   metaRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  name: { fontSize: 13, fontWeight: "500", color: "#4A3728" },
-  time: { fontSize: 11, color: "#8A7A6E" },
-  body: { fontSize: 14, color: "#4A3728", lineHeight: 20, marginTop: 2 },
+  name: { fontSize: 13, fontWeight: "500", color: colors.ink },
+  time: { fontSize: 11, color: colors.muted },
+  body: { fontSize: 14, color: colors.ink, lineHeight: 20, marginTop: 2 },
 });

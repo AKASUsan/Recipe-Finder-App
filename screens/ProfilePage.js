@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useCallback, useContext, useState } from "react";
 import {
   View,
@@ -18,11 +19,11 @@ import { getMyRecipes, getRecipesByIds } from "../data/recipes";
 import { getUser } from "../data/users";
 import AccountSheet from "../components/AccountSheet";
 
-const CREAM = "#FFF1E6";
-const CORAL = "#E08E79";
-const PEACH = "#F3D5C3";
-const BROWN = "#4A3728";
-const MUTED = "#8A7A6E";
+const CREAM = colors.background;
+const CORAL = colors.accent;
+const PEACH = colors.accentSoft;
+const BROWN = colors.ink;
+const MUTED = colors.muted;
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -175,11 +176,11 @@ function LoggedInView({ user }) {
       >
         <Path
           d="M0 0 H300 V46 C262 30 232 78 184 92 C132 108 104 62 58 92 C32 108 14 122 0 132 Z"
-          fill="#F5C6B0"
+          fill={colors.sage}
         />
         <Path
           d="M0 0 H300 V22 C266 12 236 52 196 64 C150 78 118 36 74 60 C40 78 18 88 0 96 Z"
-          fill={CORAL}
+          fill={colors.forest}
         />
       </Svg>
 
@@ -191,7 +192,7 @@ function LoggedInView({ user }) {
           style={styles.settings}
           accessibilityLabel="Account settings"
         >
-          <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+          <Ionicons name="settings-outline" size={22} color={colors.white} />
         </Pressable>
       </View>
 
@@ -229,11 +230,6 @@ function LoggedInView({ user }) {
           }
         />
       </View>
-
-      {/* TODO: hook up an edit-profile screen */}
-      <Pressable style={styles.editPill} onPress={() => {}}>
-        <Text style={styles.editText}>Edit profile</Text>
-      </Pressable>
 
       <View style={styles.tabs}>
         <Tab
@@ -310,7 +306,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: "#F9DDCB",
+    backgroundColor: colors.surfaceAlt,
   },
   guestContent: {
     flex: 1,
@@ -321,7 +317,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 56,
@@ -346,7 +342,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 28,
     alignItems: "center",
-    backgroundColor: CORAL,
+    backgroundColor: colors.forest,
     marginBottom: 10,
   },
   pillOutline: {
@@ -354,7 +350,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: CORAL,
   },
-  pillText: { color: "#FFFFFF", fontSize: 16, fontWeight: "600" },
+  pillText: { color: colors.white, fontSize: 16, fontWeight: "600" },
   pillTextOutline: { color: CORAL },
   link: { color: MUTED, fontSize: 14, marginTop: 8 },
 
@@ -365,7 +361,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  topTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "600" },
+  topTitle: { color: colors.white, fontSize: 18, fontWeight: "600" },
   settings: { position: "absolute", right: 18 },
   avatarRing: {
     alignSelf: "center",
@@ -373,7 +369,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 4,
     borderColor: CREAM,
     alignItems: "center",
@@ -383,14 +379,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: PEACH,
+    backgroundColor: colors.surfaceAlt,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarText: { fontSize: 34, fontWeight: "600", color: CORAL },
   name: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 23,
+    fontWeight: "800",
     color: BROWN,
     textAlign: "center",
     marginTop: 10,
@@ -408,7 +404,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   stat: { alignItems: "center" },
-  statValue: { fontSize: 17, fontWeight: "700", color: BROWN },
+  statValue: { fontSize: 19, fontWeight: "800", color: BROWN },
   statLabel: { fontSize: 12, color: MUTED, marginTop: 1 },
   editPill: {
     alignSelf: "center",
@@ -418,7 +414,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: PEACH,
   },
-  editText: { color: "#A9553F", fontSize: 13, fontWeight: "600" },
+  editText: { color: colors.accentDeep, fontSize: 13, fontWeight: "600" },
 
   tabs: {
     flexDirection: "row",
@@ -442,13 +438,15 @@ const styles = StyleSheet.create({
   row: { paddingHorizontal: 22, gap: 12, marginBottom: 12 },
 
   card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    backgroundColor: colors.white,
+    borderRadius: 18,
     padding: 8,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   cardImage: { width: "100%", height: 88, borderRadius: 10 },
   cardImageEmpty: {
-    backgroundColor: "#F9DDCB",
+    backgroundColor: colors.surfaceAlt,
     alignItems: "center",
     justifyContent: "center",
   },

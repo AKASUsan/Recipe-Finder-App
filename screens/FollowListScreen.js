@@ -1,11 +1,12 @@
+import { colors } from "../theme";
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, FlatList, ActivityIndicator, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import UserRow from "../components/UserRow";
 import { getFollowers, getFollowing } from "../data/users";
 
-const CORAL = "#E08E79";
-const MUTED = "#8A7A6E";
+const CORAL = colors.accent;
+const MUTED = colors.muted;
 
 export default function FollowListScreen({ route, navigation }) {
   const { uid, tab: initialTab = "followers" } = route.params;
@@ -64,8 +65,8 @@ export default function FollowListScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  tabs: { flexDirection: "row", marginHorizontal: 20, borderBottomWidth: 0.5, borderBottomColor: "#E6E0DA" },
+  screen: { flex: 1, backgroundColor: colors.background },
+  tabs: { flexDirection: "row", marginHorizontal: 20, borderBottomWidth: 0.5, borderBottomColor: colors.line },
   tab: { flex: 1, alignItems: "center", paddingVertical: 14, borderBottomWidth: 2, borderBottomColor: "transparent" },
   tabActive: { borderBottomColor: CORAL },
   tabText: { fontSize: 14, color: MUTED },

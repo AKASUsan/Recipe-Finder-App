@@ -1,3 +1,4 @@
+import { categoryTone, colors } from "../theme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -13,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { getCategories } from "../data/categories";
@@ -64,7 +66,9 @@ function Chip({ label, active, onPress }) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, active && styles.chipActive]}
+      accessibilityRole="button"
+      accessibilityState={{ selected: !!active }}
+      style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && { transform: [{ scale: 0.96 }] }]}
     >
       <Text style={[styles.chipText, active && styles.chipTextActive]}>
         {label}
@@ -79,7 +83,7 @@ function Thumb({ uri }) {
   if (!uri || failed) {
     return (
       <View style={[styles.thumb, styles.thumbEmpty]}>
-        <Ionicons name="restaurant-outline" size={20} color="#E08E79" />
+        <Ionicons name="restaurant-outline" size={20} color={colors.accent} />
       </View>
     );
   }
@@ -96,7 +100,7 @@ function RecipeRow({ recipe, tokens, onPress }) {
   // Adjust these two fields to match your recipe model.
   const uri = recipe.imageUrl ?? recipe.image;
   return (
-    <Pressable onPress={onPress} style={styles.recipeRow}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`Open ${recipe.title}`} style={({ pressed }) => [styles.recipeRow, pressed && { opacity: 0.82, transform: [{ scale: 0.98 }] }]}>
       <Thumb uri={uri} />
       <View style={styles.recipeInfo}>
         <Highlight
@@ -108,13 +112,14 @@ function RecipeRow({ recipe, tokens, onPress }) {
           {`${recipe.duration ?? "-"} min · ${recipe.authorName ?? "Recipe Finder"}`}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={16} color="#B5A79B" />
+      <View style={styles.rowArrow}><Ionicons name="arrow-forward" size={16} color={colors.ink} /></View>
     </Pressable>
   );
 }
 
 export default function SearchPage() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
   const inputRef = useRef(null);
 
@@ -234,20 +239,23 @@ export default function SearchPage() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E08E79" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
 
   const searchBox = (
     <View style={styles.pad}>
+      <Text style={styles.eyebrow}>THE RECIPE INDEX  /  001</Text>
+      <Text style={styles.pageTitle}>Find your flavor.</Text>
+      <Text style={styles.pageSubtitle}>Cravings, ideas, and everything in between.</Text>
       <View
         style={[styles.searchBox, text.length > 0 && styles.searchBoxActive]}
       >
         <Ionicons
           name="search"
           size={18}
-          color={text ? "#E08E79" : "#8A7A6E"}
+          color={text ? colors.accent : colors.muted}
         />
         <TextInput
           ref={inputRef}
@@ -255,8 +263,8 @@ export default function SearchPage() {
           value={text}
           onChangeText={setText}
           onSubmitEditing={() => saveRecent(text)}
-          placeholder="Search recipes"
-          placeholderTextColor="#B5A79B"
+          placeholder="What are you craving?"
+          placeholderTextColor={colors.subtle}
           returnKeyType="search"
           autoCorrect={false}
           autoCapitalize="none"
@@ -267,7 +275,7 @@ export default function SearchPage() {
             hitSlop={10}
             accessibilityLabel="Clear search"
           >
-            <Ionicons name="close-circle" size={18} color="#B5A79B" />
+            <Ionicons name="close-circle" size={18} color={colors.subtle} />
           </Pressable>
         ) : (
           <Pressable
@@ -276,7 +284,7 @@ export default function SearchPage() {
             style={styles.atBtn}
             accessibilityLabel="Search people"
           >
-            <Ionicons name="at" size={15} color="#E08E79" />
+            <Ionicons name="at" size={15} color={colors.accent} />
           </Pressable>
         )}
       </View>
@@ -286,7 +294,7 @@ export default function SearchPage() {
   /* ---------- People mode ---------- */
   if (peopleMode) {
     return (
-      <View style={styles.screen}>
+      <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
         {searchBox}
         <Text style={[styles.note, styles.pad]}>
           Searching people. Remove the @ to search recipes.
@@ -313,7 +321,7 @@ export default function SearchPage() {
           )}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="people-outline" size={32} color="#E08E79" />
+              <Ionicons name="people-outline" size={32} color={colors.accent} />
               <Text style={styles.emptyTitle}>
                 {!peopleQuery
                   ? "Find a cook"
@@ -336,7 +344,7 @@ export default function SearchPage() {
   /* ---------- Recipe mode: idle ---------- */
   if (showIdle) {
     return (
-      <View style={styles.screen}>
+      <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
         {searchBox}
         <ScrollView
           keyboardShouldPersistTaps="handled"
@@ -346,6 +354,12 @@ export default function SearchPage() {
             { paddingBottom: tabBarHeight + 32 },
           ]}
         >
+          <Pressable style={({ pressed }) => [styles.discoveryPanel, pressed && { opacity: 0.86 }]} onPress={() => navigation.navigate("AllRecipes", { title: "All recipes", type: "all" })} accessibilityRole="button" accessibilityLabel="Browse all recipes">
+            <View style={styles.discoveryCircle} />
+            <Text style={styles.discoveryEyebrow}>DON'T KNOW WHERE TO START?</Text>
+            <Text style={styles.discoveryTitle}>The whole menu{"\n"}is yours.</Text>
+            <View style={styles.discoveryAction}><Text style={styles.discoveryActionText}>Browse all recipes</Text><Ionicons name="arrow-forward" size={17} color={colors.ink} /></View>
+          </Pressable>
           {recent.length > 0 && (
             <>
               <View style={styles.sectionHead}>
@@ -360,11 +374,11 @@ export default function SearchPage() {
                   onPress={() => setText(r)}
                   style={styles.recentRow}
                 >
-                  <Ionicons name="time-outline" size={17} color="#B5A79B" />
+                  <Ionicons name="time-outline" size={17} color={colors.subtle} />
                   <Text style={styles.recentText} numberOfLines={1}>
                     {r}
                   </Text>
-                  <Ionicons name="arrow-up-outline" size={16} color="#B5A79B" />
+                  <Ionicons name="arrow-up-outline" size={16} color={colors.subtle} />
                 </Pressable>
               ))}
             </>
@@ -373,19 +387,22 @@ export default function SearchPage() {
           {categories.length > 0 && (
             <>
               <View style={styles.sectionHead}>
-                <Text style={styles.label}>Categories</Text>
+                <Text style={styles.label}>Explore by craving</Text>
               </View>
               <View style={styles.chipRow}>
                 {categories.map((c) => (
-                  <Chip
+                  <Pressable
                     key={c.id}
-                    label={c.title}
                     onPress={() => pickCategory(c.id)}
-                  />
+                    accessibilityRole="button"
+                    accessibilityLabel={`Search ${c.title} recipes`}
+                    style={({ pressed }) => [styles.categoryTile, { backgroundColor: categoryTone(c) }, pressed && { opacity: 0.78 }]}
+                  ><Ionicons name={c.icon ?? "restaurant-outline"} size={23} color={colors.ink} /><Text style={styles.categoryTileText} numberOfLines={2}>{c.title}</Text><Ionicons name="arrow-forward" size={15} color={colors.ink} /></Pressable>
                 ))}
               </View>
             </>
           )}
+          <View style={styles.tip}><Ionicons name="sparkles-outline" size={20} color={colors.accent} /><View style={{ flex: 1 }}><Text style={styles.tipTitle}>Meet the cooks</Text><Text style={styles.tipText}>Type @ before a name to discover people and their recipes.</Text></View></View>
         </ScrollView>
       </View>
     );
@@ -393,7 +410,7 @@ export default function SearchPage() {
 
   /* ---------- Recipe mode: results ---------- */
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingTop: insets.top + 12 }]}>
       {searchBox}
 
       <View style={styles.filterWrap}>
@@ -442,7 +459,7 @@ export default function SearchPage() {
         )}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="restaurant-outline" size={32} color="#E08E79" />
+            <Ionicons name="restaurant-outline" size={32} color={colors.accent} />
             <Text style={styles.emptyTitle}>No recipes found</Text>
             <Text style={styles.emptyBody}>
               Try a different word or another category.
@@ -470,38 +487,41 @@ export default function SearchPage() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFF8F2", paddingTop: 12 },
+  screen: { flex: 1, backgroundColor: colors.background, paddingTop: 12 },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFF8F2",
+    backgroundColor: colors.background,
   },
-  pad: { paddingHorizontal: 16 },
+  pad: { paddingHorizontal: 20 },
+  eyebrow: { color: colors.accent, fontSize: 10, fontWeight: "900", letterSpacing: 1.5, marginTop: 6 },
+  pageTitle: { fontSize: 32, color: colors.ink, fontWeight: "900", letterSpacing: -1, marginTop: 5 },
+  pageSubtitle: { fontSize: 12, color: colors.muted, marginTop: 4, marginBottom: 19 },
 
   searchBox: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    height: 46,
+    height: 54,
     paddingLeft: 14,
     paddingRight: 10,
-    borderRadius: 23,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderRadius: 18,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
-  searchBoxActive: { borderWidth: 1, borderColor: "#E08E79" },
-  input: { flex: 1, fontSize: 14, color: "#4A3728", paddingVertical: 0 },
+  searchBoxActive: { borderWidth: 1, borderColor: colors.accent },
+  input: { flex: 1, fontSize: 14, color: colors.ink, paddingVertical: 0, fontWeight: "600" },
   atBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#FFF1E6",
+    backgroundColor: colors.background,
     alignItems: "center",
     justifyContent: "center",
   },
-  note: { fontSize: 12, color: "#8A7A6E", marginTop: 12, marginBottom: 6 },
+  note: { fontSize: 12, color: colors.muted, marginTop: 12, marginBottom: 6 },
 
   sectionHead: {
     flexDirection: "row",
@@ -510,8 +530,8 @@ const styles = StyleSheet.create({
     marginTop: 22,
     marginBottom: 8,
   },
-  label: { fontSize: 12, color: "#8A7A6E", fontWeight: "500" },
-  clearLink: { fontSize: 12, color: "#E08E79", fontWeight: "500" },
+  label: { fontSize: 16, color: colors.ink, fontWeight: "800" },
+  clearLink: { fontSize: 12, color: colors.accent, fontWeight: "500" },
 
   recentRow: {
     flexDirection: "row",
@@ -519,46 +539,58 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 0.5,
-    borderBottomColor: "#EDE4DB",
+    borderBottomColor: colors.line,
   },
-  recentText: { flex: 1, fontSize: 14, color: "#4A3728" },
+  recentText: { flex: 1, fontSize: 14, color: colors.ink },
 
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  categoryTile: { width: "48%", borderRadius: 19, minHeight: 106, padding: 14, justifyContent: "space-between", flexDirection: "row", alignItems: "flex-end" },
+  categoryTileText: { color: colors.ink, fontWeight: "900", fontSize: 14, flex: 1, marginLeft: 8 },
+  discoveryPanel: { backgroundColor: colors.forest, borderRadius: 25, padding: 22, marginTop: 24, minHeight: 204, overflow: "hidden" },
+  discoveryCircle: { position: "absolute", width: 180, height: 180, borderRadius: 90, right: -46, top: -63, backgroundColor: "#245849" },
+  discoveryEyebrow: { color: colors.sage, fontSize: 10, fontWeight: "900", letterSpacing: 1.4 },
+  discoveryTitle: { color: colors.white, fontSize: 27, lineHeight: 30, fontWeight: "900", letterSpacing: -0.6, marginTop: 19 },
+  discoveryAction: { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", gap: 9, backgroundColor: colors.sage, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 9, marginTop: 17 },
+  discoveryActionText: { color: colors.ink, fontSize: 12, fontWeight: "900" },
   chip: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
-    borderRadius: 16,
+    borderColor: colors.line,
+    borderRadius: 14,
     paddingHorizontal: 13,
-    paddingVertical: 7,
+    paddingVertical: 9,
   },
-  chipActive: { backgroundColor: "#E08E79", borderColor: "#E08E79" },
-  chipText: { fontSize: 12, color: "#4A3728" },
-  chipTextActive: { color: "#FFFFFF", fontWeight: "500" },
+  chipActive: { backgroundColor: colors.forest, borderColor: colors.forest },
+  chipText: { fontSize: 12, color: colors.ink, fontWeight: "600" },
+  chipTextActive: { color: colors.white, fontWeight: "500" },
 
   filterWrap: { marginTop: 12 },
   filterRow: { paddingHorizontal: 16, gap: 8 },
-  count: { fontSize: 12, color: "#8A7A6E", marginTop: 14, marginBottom: 4 },
+  count: { fontSize: 12, color: colors.muted, marginTop: 14, marginBottom: 4 },
 
   recipeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#EDE4DB",
+    padding: 10,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   thumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: "#F3E9E0",
+    width: 70,
+    height: 70,
+    borderRadius: 13,
+    backgroundColor: colors.surfaceAlt,
   },
   thumbEmpty: { alignItems: "center", justifyContent: "center" },
   recipeInfo: { flex: 1, gap: 3 },
-  recipeTitle: { fontSize: 14, fontWeight: "500", color: "#4A3728" },
-  recipeMeta: { fontSize: 12, color: "#8A7A6E" },
-  hl: { color: "#E08E79" },
+  recipeTitle: { fontSize: 15, fontWeight: "800", color: colors.ink },
+  recipeMeta: { fontSize: 12, color: colors.muted },
+  rowArrow: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.accentSoft, alignItems: "center", justifyContent: "center" },
+  hl: { color: colors.accent },
 
   empty: {
     alignItems: "center",
@@ -569,16 +601,19 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#4A3728",
+    color: colors.ink,
     marginTop: 6,
   },
-  emptyBody: { fontSize: 12, color: "#8A7A6E", textAlign: "center" },
+  emptyBody: { fontSize: 12, color: colors.muted, textAlign: "center" },
   clearBtn: {
     marginTop: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: "#FFF1E6",
+    backgroundColor: colors.background,
   },
-  clearBtnText: { fontSize: 12, fontWeight: "500", color: "#E08E79" },
+  clearBtnText: { fontSize: 12, fontWeight: "500", color: colors.accent },
+  tip: { flexDirection: "row", gap: 12, backgroundColor: colors.accentSoft, borderRadius: 18, padding: 16, marginTop: 28, alignItems: "center" },
+  tipTitle: { fontSize: 13, fontWeight: "800", color: colors.ink },
+  tipText: { fontSize: 11, color: colors.muted, lineHeight: 16, marginTop: 3 },
 });

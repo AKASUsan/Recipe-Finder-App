@@ -1,3 +1,4 @@
+import { categoryTone, colors } from "../theme";
 import { useContext, useEffect, useState } from "react";
 import {
   View,
@@ -17,9 +18,9 @@ import { FavoritesContext } from "../store/context/favorites-context";
 import { incrementViewCount } from "../data/recipes";
 import { subscribeComments } from "../data/comments";
 
-const CORAL = "#E08E79";
-const BROWN = "#4A3728";
-const MUTED = "#8A7A6E";
+const CORAL = colors.accent;
+const BROWN = colors.ink;
+const MUTED = colors.muted;
 
 const cap = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -111,7 +112,7 @@ export default function RecipeDetailScreen({ route }) {
         <View
           style={[
             styles.hero,
-            { backgroundColor: category?.color ?? "#EBDDD0" },
+            { backgroundColor: categoryTone(category) },
           ]}
         >
           {recipe.imageUrl ? (
@@ -130,6 +131,7 @@ export default function RecipeDetailScreen({ route }) {
         </View>
 
         <View style={styles.sheet}>
+          <Text style={styles.eyebrow}>THE RECIPE EDIT  /  {category?.title?.toUpperCase() ?? "GOOD FOOD"}</Text>
           <Text style={styles.title}>{recipe.title}</Text>
 
           <Pressable
@@ -152,7 +154,7 @@ export default function RecipeDetailScreen({ route }) {
               {posted ? ` · ${posted}` : ""}
             </Text>
             {!!recipe.authorId && (
-              <Ionicons name="chevron-forward" size={16} color={MUTED} />
+              <Ionicons name="chevron-forward" size={16} color={colors.sage} />
             )}
           </Pressable>
 
@@ -190,9 +192,11 @@ export default function RecipeDetailScreen({ route }) {
           {tab === "ingredients" && (
             <View>
               {ingredients.length > 0 && (
-                <Text style={styles.hint}>
-                  {doneCount} of {ingredients.length} ready · tap to check off
-                </Text>
+                <View style={styles.progressWrap}>
+                  <View style={styles.progressHead}><Text style={styles.progressTitle}>Your prep list</Text><Text style={styles.progressCount}>{doneCount}/{ingredients.length} ready</Text></View>
+                  <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${(doneCount / ingredients.length) * 100}%` }]} /></View>
+                  <Text style={styles.hint}>Tap an ingredient as you gather it.</Text>
+                </View>
               )}
               {ingredients.map((item, i) => {
                 const on = !!checked[i];
@@ -204,7 +208,7 @@ export default function RecipeDetailScreen({ route }) {
                   >
                     <View style={[styles.box, on && styles.boxOn]}>
                       {on && (
-                        <Ionicons name="checkmark" size={13} color="#FFFFFF" />
+                        <Ionicons name="checkmark" size={13} color={colors.white} />
                       )}
                     </View>
                     <Text style={[styles.body, on && styles.done]}>{item}</Text>
@@ -253,82 +257,92 @@ export default function RecipeDetailScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  hero: { height: 240, alignItems: "center", justifyContent: "center" },
+  screen: { flex: 1, backgroundColor: colors.background },
+  hero: { height: 330, alignItems: "center", justifyContent: "center" },
   heroImage: { width: "100%", height: "100%" },
   roundBtn: {
     position: "absolute",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "rgba(255,255,255,0.92)",
     alignItems: "center",
     justifyContent: "center",
   },
   sheet: {
-    backgroundColor: "#FFF8F2",
-    marginTop: -24,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    backgroundColor: colors.forest,
+    marginTop: -46,
+    marginHorizontal: 14,
+    borderRadius: 27,
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 6,
+    paddingTop: 26,
+    paddingBottom: 24,
   },
-  title: { fontSize: 24, fontWeight: "600", color: BROWN, lineHeight: 30 },
+  eyebrow: { color: colors.sage, fontSize: 10, letterSpacing: 1.5, fontWeight: "900", marginBottom: 10 },
+  title: { fontSize: 30, fontWeight: "900", color: colors.white, lineHeight: 35, letterSpacing: -0.6 },
   author: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },
   avatar: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#F3D5C3",
+    backgroundColor: colors.sage,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { color: CORAL, fontWeight: "600", fontSize: 12 },
-  authorText: { fontSize: 13, color: MUTED, flex: 1 },
-  authorName: { color: BROWN, fontWeight: "600" },
+  avatarText: { color: colors.ink, fontWeight: "800", fontSize: 12 },
+  authorText: { fontSize: 13, color: colors.sage, flex: 1 },
+  authorName: { color: colors.white, fontWeight: "800" },
   pills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 14 },
   pill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
+    backgroundColor: colors.white,
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   pillText: { fontSize: 12, color: BROWN },
   tag: {
-    backgroundColor: "#FFF1E6",
-    borderRadius: 14,
+    backgroundColor: "#245849",
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  tagText: { fontSize: 12, color: "#A9553F" },
+  tagText: { fontSize: 12, color: colors.white, fontWeight: "700" },
   tabs: {
     flexDirection: "row",
-    marginTop: 12,
-    marginHorizontal: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#E6E0DA",
+    marginTop: 21,
+    marginHorizontal: 14,
+    padding: 4,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceAlt,
+    gap: 3,
   },
   tab: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
+    paddingVertical: 11,
+    borderRadius: 14,
   },
-  tabActive: { borderBottomColor: CORAL },
-  tabText: { fontSize: 12, color: MUTED },
-  tabTextActive: { color: CORAL, fontWeight: "600" },
-  content: { paddingHorizontal: 20, paddingTop: 14, minHeight: 200 },
-  hint: { fontSize: 12, color: MUTED, marginBottom: 6 },
+  tabActive: { backgroundColor: colors.forest },
+  tabText: { fontSize: 11, color: MUTED, fontWeight: "700" },
+  tabTextActive: { color: colors.white, fontWeight: "900" },
+  content: { paddingHorizontal: 20, paddingTop: 20, minHeight: 200 },
+  progressWrap: { backgroundColor: colors.white, borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.line },
+  progressHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  progressTitle: { color: BROWN, fontSize: 14, fontWeight: "800" },
+  progressCount: { color: CORAL, fontSize: 12, fontWeight: "800" },
+  progressTrack: { height: 6, backgroundColor: colors.surfaceAlt, borderRadius: 3, overflow: "hidden", marginTop: 12 },
+  progressFill: { height: 6, borderRadius: 3, backgroundColor: CORAL },
+  hint: { fontSize: 11, color: MUTED, marginTop: 8 },
   ingredient: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 8,
+    paddingVertical: 13,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
   box: {
     width: 20,
@@ -341,7 +355,7 @@ const styles = StyleSheet.create({
   },
   boxOn: { backgroundColor: CORAL },
   done: { textDecorationLine: "line-through", color: MUTED },
-  body: { fontSize: 14, color: BROWN, lineHeight: 21 },
+  body: { fontSize: 15, color: BROWN, lineHeight: 23 },
   step: { flexDirection: "row", gap: 12, paddingVertical: 8 },
   stepNum: {
     width: 26,
@@ -352,5 +366,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 1,
   },
-  stepNumText: { fontSize: 12, color: "#FFFFFF", fontWeight: "600" },
+  stepNumText: { fontSize: 12, color: colors.white, fontWeight: "600" },
 });

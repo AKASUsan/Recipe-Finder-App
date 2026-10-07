@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useEffect, useState } from "react";
 import {
   View, Text, ScrollView, ActivityIndicator, useWindowDimensions, StyleSheet,
@@ -26,7 +27,7 @@ export default function CategoryRecipesScreen({ route, navigation }) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E08E79" />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -57,8 +58,8 @@ export default function CategoryRecipesScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFF8F2" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF8F2" },
+  screen: { flex: 1, backgroundColor: colors.background },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  empty: { textAlign: "center", color: "#8A7A6E", marginTop: 40 },
+  empty: { textAlign: "center", color: colors.muted, marginTop: 40 },
 });

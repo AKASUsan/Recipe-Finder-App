@@ -1,3 +1,4 @@
+import { categoryTone, colors } from "../theme";
 import { useEffect, useState } from "react";
 import {
   View,
@@ -56,7 +57,7 @@ function Section({ title, summary, open, onToggle, children }) {
         <Ionicons
           name={open ? "chevron-up" : "chevron-down"}
           size={20}
-          color="#8A7A6E"
+          color={colors.muted}
         />
       </Pressable>
       {open && <View style={styles.sectionBody}>{children}</View>}
@@ -77,7 +78,7 @@ function ListEditor({ values, setValues, placeholder, multiline, addLabel }) {
               setValues(values.map((x, j) => (j === i ? t : x)))
             }
             placeholder={placeholder}
-            placeholderTextColor="#B5A79B"
+            placeholderTextColor={colors.subtle}
             multiline={multiline}
           />
           {values.length > 1 && (
@@ -85,7 +86,7 @@ function ListEditor({ values, setValues, placeholder, multiline, addLabel }) {
               hitSlop={8}
               onPress={() => setValues(values.filter((_, j) => j !== i))}
             >
-              <Ionicons name="close-circle" size={22} color="#B5A79B" />
+              <Ionicons name="close-circle" size={22} color={colors.subtle} />
             </Pressable>
           )}
         </View>
@@ -94,7 +95,7 @@ function ListEditor({ values, setValues, placeholder, multiline, addLabel }) {
         style={styles.addRow}
         onPress={() => setValues([...values, ""])}
       >
-        <Ionicons name="add-circle-outline" size={20} color="#E08E79" />
+        <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
         <Text style={styles.addRowText}>{addLabel}</Text>
       </Pressable>
     </View>
@@ -230,7 +231,7 @@ export default function AddRecipeScreen({ navigation }) {
             value={title}
             onChangeText={setTitle}
             placeholder="เช่น Pad Kra Pao"
-            placeholderTextColor="#B5A79B"
+            placeholderTextColor={colors.subtle}
           />
         </View>
 
@@ -251,7 +252,7 @@ export default function AddRecipeScreen({ navigation }) {
                   onPress={() => toggleCategory(c.id)}
                   style={[styles.chip, on && styles.chipOn]}
                 >
-                  <View style={[styles.dot, { backgroundColor: c.color }]} />
+                  <View style={[styles.dot, { backgroundColor: categoryTone(c) }]} />
                   <Text style={[styles.chipText, on && styles.chipTextOn]}>
                     {c.title}
                   </Text>
@@ -274,7 +275,7 @@ export default function AddRecipeScreen({ navigation }) {
             onChangeText={(t) => setDuration(t.replace(/[^0-9]/g, ""))}
             keyboardType="number-pad"
             placeholder="เช่น 30"
-            placeholderTextColor="#B5A79B"
+            placeholderTextColor={colors.subtle}
           />
           <Text style={styles.sub}>Affordability</Text>
           <Segmented
@@ -297,7 +298,7 @@ export default function AddRecipeScreen({ navigation }) {
             autoCorrect={false}
             keyboardType="url"
             placeholder="https://..."
-            placeholderTextColor="#B5A79B"
+            placeholderTextColor={colors.subtle}
           />
         </Section>
 
@@ -347,8 +348,8 @@ export default function AddRecipeScreen({ navigation }) {
               <Switch
                 value={flags[key]}
                 onValueChange={() => toggleFlag(key)}
-                trackColor={{ false: "#E6E0DA", true: "#F2C4B8" }}
-                thumbColor={flags[key] ? "#E08E79" : "#FFFFFF"}
+                trackColor={{ false: colors.line, true: colors.accentSoft }}
+                thumbColor={flags[key] ? colors.accent : colors.white}
               />
             </View>
           ))}
@@ -362,7 +363,7 @@ export default function AddRecipeScreen({ navigation }) {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={colors.white} />
           ) : (
             <Text style={styles.saveText}>Save recipe</Text>
           )}
@@ -374,31 +375,31 @@ export default function AddRecipeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  screen: { flex: 1, backgroundColor: "#FFF8F2" },
+  screen: { flex: 1, backgroundColor: colors.background },
   titleBlock: { marginBottom: 14 },
-  label: { fontSize: 14, fontWeight: "500", color: "#4A3728", marginBottom: 6 },
-  sub: { fontSize: 12, color: "#8A7A6E", marginTop: 12, marginBottom: 6 },
-  summary: { fontSize: 12, color: "#8A7A6E", marginTop: -2 },
+  label: { fontSize: 14, fontWeight: "500", color: colors.ink, marginBottom: 6 },
+  sub: { fontSize: 12, color: colors.muted, marginTop: 12, marginBottom: 6 },
+  summary: { fontSize: 12, color: colors.muted, marginTop: -2 },
   section: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     borderRadius: 12,
     marginBottom: 10,
     overflow: "hidden",
   },
-  sectionOpen: { borderColor: "#E08E79" },
+  sectionOpen: { borderColor: colors.accent },
   sectionHead: { flexDirection: "row", alignItems: "center", padding: 14 },
   sectionBody: { paddingHorizontal: 14, paddingBottom: 14 },
   input: {
-    backgroundColor: "#FFF8F2",
+    backgroundColor: colors.background,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    color: "#4A3728",
+    color: colors.ink,
   },
   multiline: { minHeight: 64, textAlignVertical: "top" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -406,27 +407,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
   chipOn: {
-    backgroundColor: "#FFF1E6",
-    borderColor: "#E08E79",
+    backgroundColor: colors.background,
+    borderColor: colors.accent,
     borderWidth: 1,
   },
-  chipText: { fontSize: 12, color: "#4A3728" },
-  chipTextOn: { color: "#E08E79", fontWeight: "500" },
+  chipText: { fontSize: 12, color: colors.ink },
+  chipTextOn: { color: colors.accent, fontWeight: "500" },
   dot: { width: 10, height: 10, borderRadius: 5 },
   segment: {
     flexDirection: "row",
-    backgroundColor: "#FFF8F2",
+    backgroundColor: colors.background,
     borderRadius: 10,
     borderWidth: 0.5,
-    borderColor: "#E6E0DA",
+    borderColor: colors.line,
     padding: 3,
   },
   segItem: {
@@ -435,9 +436,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
-  segActive: { backgroundColor: "#FFF1E6" },
-  segText: { fontSize: 12, color: "#8A7A6E" },
-  segTextActive: { color: "#E08E79", fontWeight: "500" },
+  segActive: { backgroundColor: colors.background },
+  segText: { fontSize: 12, color: colors.muted },
+  segTextActive: { color: colors.accent, fontWeight: "500" },
   listRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -448,7 +449,7 @@ const styles = StyleSheet.create({
     width: 18,
     marginTop: 11,
     fontSize: 12,
-    color: "#8A7A6E",
+    color: colors.muted,
     textAlign: "center",
   },
   addRow: {
@@ -457,27 +458,27 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 4,
   },
-  addRowText: { fontSize: 13, color: "#E08E79", fontWeight: "500" },
+  addRowText: { fontSize: 13, color: colors.accent, fontWeight: "500" },
   switchRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 4,
   },
-  switchText: { fontSize: 14, color: "#4A3728" },
+  switchText: { fontSize: 14, color: colors.ink },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: "#FFF8F2",
+    backgroundColor: colors.background,
     borderTopWidth: 0.5,
-    borderTopColor: "#E6E0DA",
+    borderTopColor: colors.line,
   },
   save: {
-    backgroundColor: "#E08E79",
+    backgroundColor: colors.accent,
     borderRadius: 14,
     height: 50,
     alignItems: "center",
     justifyContent: "center",
   },
-  saveText: { color: "#FFFFFF", fontSize: 16, fontWeight: "500" },
+  saveText: { color: colors.white, fontSize: 16, fontWeight: "500" },
 });

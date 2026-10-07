@@ -1,83 +1,37 @@
-import { useRef, useState } from "react";
-import { View, Text, FlatList, Pressable, Animated, StyleSheet } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { categoryTone, colors } from "../theme";
 
-const TRACK = 64; 
 export default function CategoryStrip({ categories, selectedId, onSelect }) {
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const [layoutW, setLayoutW] = useState(0);
-  const [contentW, setContentW] = useState(0);
-
-  const scrollable = contentW > layoutW && layoutW > 0;
-  const thumbW = scrollable ? Math.max(20, (layoutW / contentW) * TRACK) : TRACK;
-  const maxScroll = Math.max(1, contentW - layoutW);
-
-  const thumbX = scrollX.interpolate({
-    inputRange: [0, maxScroll],
-    outputRange: [0, TRACK - thumbW],
-    extrapolate: "clamp",
-  });
-
-  return (
-    <View>
-      <FlatList
-        horizontal
-        data={categories}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-        onLayout={(e) => setLayoutW(e.nativeEvent.layout.width)}
-        onContentSizeChange={(w) => setContentW(w)}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-        renderItem={({ item }) => {
-          const active = item.id === selectedId;
-          return (
-            <Pressable onPress={() => onSelect(item.id)} style={styles.item}>
-              <View
-                style={[
-                  styles.dot,
-                  { backgroundColor: item.color },
-                  active && styles.dotActive,
-                ]}
-              >
-                <Ionicons name={item.icon ?? "restaurant-outline"} size={23} color="#4A3728" />
-              </View>
-              <Text style={[styles.label, active && styles.labelActive]} numberOfLines={1}>
-                {item.title}
-              </Text>
-            </Pressable>
-          );
-        }}
-      />
-
-      {scrollable && (
-        <View style={styles.track}>
-          <Animated.View
-            style={[styles.thumb, { width: thumbW, transform: [{ translateX: thumbX }] }]}
-          />
-        </View>
-      )}
-    </View>
-  );
+  return <FlatList
+    horizontal
+    data={categories}
+    keyExtractor={(item) => item.id}
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.list}
+    renderItem={({ item }) => {
+      const active = item.id === selectedId;
+      return <Pressable
+        onPress={() => onSelect(item.id)}
+        accessibilityRole="button"
+        accessibilityLabel={`Browse ${item.title} recipes`}
+        accessibilityState={{ selected: active }}
+        style={({ pressed }) => [styles.tile, { backgroundColor: categoryTone(item) }, active && styles.active, pressed && styles.pressed]}
+      >
+        <View style={styles.tileTop}><View style={styles.iconBubble}><Ionicons name={item.icon ?? "restaurant-outline"} size={24} color={colors.ink} /></View><Ionicons name="arrow-up-outline" size={15} color={colors.ink} style={styles.arrow} /></View>
+        <Text style={styles.label} numberOfLines={2}>{item.title}</Text>
+      </Pressable>;
+    }}
+  />;
 }
 
 const styles = StyleSheet.create({
-  list: { paddingHorizontal: 16, gap: 14 },
-  item: { width: 64, alignItems: "center", gap: 6 },
-  dot: {
-    width: 52, height: 52, borderRadius: 26,
-    alignItems: "center", justifyContent: "center",
-  },
-  dotActive: { borderWidth: 2, borderColor: "#E08E79" },
-  label: { fontSize: 11, color: "#4A3728" },
-  labelActive: { color: "#E08E79", fontWeight: "500" },
-  track: {
-    width: TRACK, height: 4, borderRadius: 2,
-    backgroundColor: "#EBDDD0", alignSelf: "center", marginTop: 12,
-  },
-  thumb: { height: 4, borderRadius: 2, backgroundColor: "#E08E79" },
+  list: { paddingHorizontal: 20, gap: 11 },
+  tile: { width: 130, minHeight: 115, borderRadius: 20, padding: 12, justifyContent: "space-between", borderWidth: 1, borderColor: "rgba(23,56,47,0.07)" },
+  active: { borderColor: colors.accent, borderWidth: 2 },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.96 }] },
+  tileTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  iconBubble: { width: 40, height: 40, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.68)", alignItems: "center", justifyContent: "center" },
+  arrow: { transform: [{ rotate: "45deg" }] },
+  label: { color: colors.ink, fontSize: 14, fontWeight: "900", lineHeight: 17 },
 });

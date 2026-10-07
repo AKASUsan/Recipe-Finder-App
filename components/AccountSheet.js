@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { Modal, Pressable, Text, View, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -6,11 +7,11 @@ function Row({ icon, label, onPress, danger }) {
   return (
     <Pressable
       onPress={onPress}
-      android_ripple={{ color: "#F3D5C3" }}
+      android_ripple={{ color: colors.accentSoft }}
       style={styles.row}
     >
-      <Ionicons name={icon} size={20} color={danger ? "#C0563F" : "#8A7A6E"} />
-      <Text style={[styles.rowText, danger && { color: "#C0563F" }]}>{label}</Text>
+      <Ionicons name={icon} size={20} color={danger ? colors.accentDeep : colors.muted} />
+      <Text style={[styles.rowText, danger && { color: colors.accentDeep }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -61,25 +62,25 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: "rgba(74,55,40,0.45)" },
   sheet: {
     position: "absolute", left: 0, right: 0, bottom: 0,
-    backgroundColor: "#FFFFFF", borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: 20, paddingTop: 10,
   },
   handle: {
     alignSelf: "center", width: 40, height: 4, borderRadius: 2,
-    backgroundColor: "#E6E0DA", marginBottom: 14,
+    backgroundColor: colors.line, marginBottom: 14,
   },
   header: {
     flexDirection: "row", alignItems: "center", gap: 12,
     paddingBottom: 14, marginBottom: 4,
-    borderBottomWidth: 0.5, borderBottomColor: "#E6E0DA",
+    borderBottomWidth: 0.5, borderBottomColor: colors.line,
   },
   avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: "#F3D5C3",
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentSoft,
     alignItems: "center", justifyContent: "center",
   },
-  avatarText: { fontSize: 18, fontWeight: "600", color: "#E08E79" },
-  name: { fontSize: 16, fontWeight: "600", color: "#4A3728" },
-  email: { fontSize: 13, color: "#8A7A6E", marginTop: 1 },
+  avatarText: { fontSize: 18, fontWeight: "600", color: colors.accent },
+  name: { fontSize: 16, fontWeight: "600", color: colors.ink },
+  email: { fontSize: 13, color: colors.muted, marginTop: 1 },
   row: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 14 },
-  rowText: { fontSize: 15, color: "#4A3728" },
+  rowText: { fontSize: 15, color: colors.ink },
 });

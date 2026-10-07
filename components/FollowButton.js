@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useEffect, useState } from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 import { auth } from "../data/firebase";
@@ -63,11 +64,11 @@ export default function FollowButton({ uid, onChange, large }) {
 const styles = StyleSheet.create({
   btn: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 16,
-    backgroundColor: "#E08E79",
+    backgroundColor: colors.accent,
   },
   large: { paddingHorizontal: 44, paddingVertical: 10, borderRadius: 20 },
-  on: { backgroundColor: "#FFF1E6" },
-  text: { fontSize: 12, fontWeight: "600", color: "#FFFFFF" },
+  on: { backgroundColor: colors.background },
+  text: { fontSize: 12, fontWeight: "600", color: colors.white },
   textLarge: { fontSize: 14 },
-  textOn: { color: "#A9553F" },
+  textOn: { color: colors.accentDeep },
 });

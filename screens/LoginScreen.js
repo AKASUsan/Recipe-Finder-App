@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { useState } from "react";
 import {
   View,
@@ -39,17 +40,18 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.icon}>
-        <Ionicons name="restaurant" size={40} color="#E08E79" />
+        <Ionicons name="restaurant" size={40} color={colors.accent} />
       </View>
 
-      <Text style={styles.title}>Welcome back</Text>
-      <Text style={styles.subtitle}>Log in to continue cooking</Text>
+      <Text style={styles.eyebrow}>YOUR KITCHEN AWAITS</Text>
+      <Text style={styles.title}>Welcome back.</Text>
+      <Text style={styles.subtitle}>Pick up where your last great meal left off.</Text>
 
       <View style={styles.field}>
-        <Ionicons name="mail-outline" size={18} color="#8A7A6E" style={styles.fieldIcon} />
+        <Ionicons name="mail-outline" size={18} color={colors.muted} style={styles.fieldIcon} />
         <TextInput
           placeholder="Email"
-          placeholderTextColor="#8A7A6E"
+          placeholderTextColor={colors.muted}
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -59,10 +61,10 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.field}>
-        <Ionicons name="lock-closed-outline" size={18} color="#8A7A6E" style={styles.fieldIcon} />
+        <Ionicons name="lock-closed-outline" size={18} color={colors.muted} style={styles.fieldIcon} />
         <TextInput
           placeholder="Password"
-          placeholderTextColor="#8A7A6E"
+          placeholderTextColor={colors.muted}
           secureTextEntry={!showPassword}
           value={password}
           onChangeText={setPassword}
@@ -72,7 +74,7 @@ export default function LoginScreen() {
           <Ionicons
             name={showPassword ? "eye-off-outline" : "eye-outline"}
             size={18}
-            color="#8A7A6E"
+            color={colors.muted}
           />
         </Pressable>
       </View>
@@ -98,7 +100,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#FFF1E6",
+    backgroundColor: colors.background,
     paddingHorizontal: 28,
     justifyContent: "center",
   },
@@ -106,23 +108,22 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: 84,
     height: 84,
-    borderRadius: 42,
-    backgroundColor: "#FFFFFF",
+    borderRadius: 26,
+    backgroundColor: colors.accentSoft,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: "#F3D5C3",
+    marginBottom: 22,
   },
+  eyebrow: { textAlign: "center", fontSize: 10, color: colors.accent, fontWeight: "800", letterSpacing: 1.5, marginBottom: 6 },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#4A3728",
+    fontSize: 30,
+    fontWeight: "800",
+    color: colors.ink,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 13,
-    color: "#8A7A6E",
+    color: colors.muted,
     textAlign: "center",
     marginTop: 4,
     marginBottom: 28,
@@ -130,30 +131,30 @@ const styles = StyleSheet.create({
   field: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.white,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#F3D5C3",
+    borderColor: colors.line,
     paddingHorizontal: 14,
     height: 52,
     marginBottom: 12,
   },
   fieldIcon: { marginRight: 8 },
-  input: { flex: 1, fontSize: 14, color: "#4A3728" },
+  input: { flex: 1, fontSize: 14, color: colors.ink },
   button: {
-    backgroundColor: "#E08E79",
-    borderRadius: 28,
+    backgroundColor: colors.forest,
+    borderRadius: 16,
     paddingVertical: 14,
     alignItems: "center",
     marginTop: 8,
   },
   buttonDisabled: { opacity: 0.7 },
-  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
+  buttonText: { color: colors.white, fontSize: 15, fontWeight: "800" },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 20,
   },
-  footerText: { color: "#8A7A6E", fontSize: 13 },
-  footerLink: { color: "#E08E79", fontSize: 13, fontWeight: "700" },
+  footerText: { color: colors.muted, fontSize: 13 },
+  footerLink: { color: colors.accent, fontSize: 13, fontWeight: "700" },
 });

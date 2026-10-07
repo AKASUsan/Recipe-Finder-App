@@ -1,3 +1,4 @@
+import { colors } from "../theme";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import FollowButton from "./FollowButton";
 
@@ -34,11 +35,11 @@ export default function UserRow({ user, onPress, highlight }) {
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 },
   avatar: {
-    width: 44, height: 44, borderRadius: 22, backgroundColor: "#F3D5C3",
+    width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accentSoft,
     alignItems: "center", justifyContent: "center",
   },
-  avatarText: { fontSize: 17, fontWeight: "600", color: "#E08E79" },
-  name: { fontSize: 15, fontWeight: "600", color: "#4A3728" },
-  hl: { color: "#E08E79" },
-  sub: { fontSize: 12, color: "#8A7A6E", marginTop: 1 },
+  avatarText: { fontSize: 17, fontWeight: "600", color: colors.accent },
+  name: { fontSize: 15, fontWeight: "600", color: colors.ink },
+  hl: { color: colors.accent },
+  sub: { fontSize: 12, color: colors.muted, marginTop: 1 },
 });
