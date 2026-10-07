@@ -11,6 +11,16 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  Easing,
+  cubicBezier,
+  interpolateColor,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import CommentsSection from "../components/CommentsSection";
@@ -21,6 +31,7 @@ import { subscribeComments } from "../data/comments";
 const CORAL = colors.accent;
 const BROWN = colors.ink;
 const MUTED = colors.muted;
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
 const cap = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -56,15 +67,97 @@ function TabItem({ label, active, onPress }) {
   );
 }
 
+function IngredientRow({ item, checked, onToggle }) {
+  const reducedMotion = useReducedMotion();
+  const fill = useSharedValue(checked ? 1 : 0);
+  const pop = useSharedValue(1);
+
+  useEffect(() => {
+    fill.set(withTiming(checked ? 1 : 0, {
+      duration: reducedMotion ? 0 : 150,
+      easing: EASE_OUT,
+    }));
+    if (checked && !reducedMotion) {
+      pop.set(0.92);
+      pop.set(withTiming(1, { duration: 150, easing: EASE_OUT }));
+    }
+  }, [checked, reducedMotion, fill, pop]);
+
+  const boxMotion = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(fill.get(), [0, 1], [colors.white, CORAL]),
+    transform: [{ scale: pop.get() }],
+  }));
+  const tickMotion = useAnimatedStyle(() => ({
+    opacity: fill.get(),
+    transform: [{ scale: 0.92 + fill.get() * 0.08 }],
+  }));
+
+  function handlePress() {
+    Haptics.selectionAsync().catch(() => {});
+    onToggle();
+  }
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      accessibilityRole="checkbox"
+      accessibilityLabel={item}
+      accessibilityState={{ checked }}
+      style={({ pressed }) => [styles.ingredient, pressed && styles.ingredientPressed]}
+    >
+      <Animated.View style={[styles.box, boxMotion]}>
+        <Animated.View style={tickMotion}>
+          <Ionicons name="checkmark" size={15} color={colors.white} />
+        </Animated.View>
+      </Animated.View>
+      <Text style={[styles.body, checked && styles.done]}>{item}</Text>
+    </Pressable>
+  );
+}
+
+function PrepProgress({ ready, total }) {
+  const reducedMotion = useReducedMotion();
+  const [trackWidth, setTrackWidth] = useState(0);
+  const progress = useSharedValue(total ? ready / total : 0);
+
+  useEffect(() => {
+    progress.set(withTiming(total ? ready / total : 0, {
+      duration: reducedMotion ? 0 : 220,
+      easing: EASE_OUT,
+    }));
+  }, [ready, total, reducedMotion, progress]);
+
+  const fillMotion = useAnimatedStyle(() => ({ width: trackWidth * progress.get() }));
+
+  return (
+    <View style={styles.progressWrap}>
+      <View style={styles.progressHead}>
+        <Text style={styles.progressTitle}>Your prep list</Text>
+        <Text style={styles.progressCount}>{ready}/{total} ready</Text>
+      </View>
+      <View style={styles.progressTrack} onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}>
+        <Animated.View style={[styles.progressFill, fillMotion]} />
+      </View>
+      {ready === total ? (
+        <View style={styles.completeNote}><Ionicons name="sparkles" size={14} color={CORAL} /><Text style={styles.completeText}>All set — let's cook!</Text></View>
+      ) : (
+        <Text style={styles.hint}>Tap an ingredient as you gather it.</Text>
+      )}
+    </View>
+  );
+}
+
 export default function RecipeDetailScreen({ route }) {
   const { recipe, category } = route.params;
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const favoritesCtx = useContext(FavoritesContext);
+  const reducedMotion = useReducedMotion();
 
   const [tab, setTab] = useState("ingredients");
   const [checked, setChecked] = useState({});
   const [commentCount, setCommentCount] = useState(0);
+  const [heartPressed, setHeartPressed] = useState(false);
 
   const isFavorite = favoritesCtx.ids.includes(recipe.id);
 
@@ -82,6 +175,7 @@ export default function RecipeDetailScreen({ route }) {
   }, [recipe.id]);
 
   function toggleFavorite() {
+    Haptics.selectionAsync().catch(() => {});
     if (isFavorite) favoritesCtx.removeFavorite(recipe.id);
     else favoritesCtx.addFavorite(recipe.id);
   }
@@ -192,29 +286,16 @@ export default function RecipeDetailScreen({ route }) {
           {tab === "ingredients" && (
             <View>
               {ingredients.length > 0 && (
-                <View style={styles.progressWrap}>
-                  <View style={styles.progressHead}><Text style={styles.progressTitle}>Your prep list</Text><Text style={styles.progressCount}>{doneCount}/{ingredients.length} ready</Text></View>
-                  <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${(doneCount / ingredients.length) * 100}%` }]} /></View>
-                  <Text style={styles.hint}>Tap an ingredient as you gather it.</Text>
-                </View>
+                <PrepProgress ready={doneCount} total={ingredients.length} />
               )}
-              {ingredients.map((item, i) => {
-                const on = !!checked[i];
-                return (
-                  <Pressable
-                    key={i}
-                    style={styles.ingredient}
-                    onPress={() => setChecked((c) => ({ ...c, [i]: !c[i] }))}
-                  >
-                    <View style={[styles.box, on && styles.boxOn]}>
-                      {on && (
-                        <Ionicons name="checkmark" size={13} color={colors.white} />
-                      )}
-                    </View>
-                    <Text style={[styles.body, on && styles.done]}>{item}</Text>
-                  </Pressable>
-                );
-              })}
+              {ingredients.map((item, i) => (
+                <IngredientRow
+                  key={i}
+                  item={item}
+                  checked={!!checked[i]}
+                  onToggle={() => setChecked((current) => ({ ...current, [i]: !current[i] }))}
+                />
+              ))}
             </View>
           )}
 
@@ -243,14 +324,16 @@ export default function RecipeDetailScreen({ route }) {
       <Pressable
         style={[styles.roundBtn, { top: insets.top + 8, right: 14 }]}
         onPress={toggleFavorite}
+        onPressIn={() => setHeartPressed(true)}
+        onPressOut={() => setHeartPressed(false)}
         hitSlop={8}
-        accessibilityLabel="Save recipe"
+        accessibilityRole="button"
+        accessibilityLabel={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        accessibilityState={{ selected: isFavorite }}
       >
-        <Ionicons
-          name={isFavorite ? "bookmark" : "bookmark-outline"}
-          size={20}
-          color={isFavorite ? CORAL : BROWN}
-        />
+        <Animated.View style={[styles.heartMotion, !reducedMotion && styles.heartTransition, heartPressed && styles.heartPressed]}>
+          <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={23} color={isFavorite ? CORAL : BROWN} />
+        </Animated.View>
       </Pressable>
     </KeyboardAvoidingView>
   );
@@ -269,6 +352,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  heartMotion: { transform: [{ scale: 1 }] },
+  heartTransition: { transitionProperty: "transform", transitionDuration: "120ms", transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1) },
+  heartPressed: { transform: [{ scale: 0.90 }] },
   sheet: {
     backgroundColor: colors.forest,
     marginTop: -46,
@@ -334,8 +420,10 @@ const styles = StyleSheet.create({
   progressTitle: { color: BROWN, fontSize: 14, fontWeight: "800" },
   progressCount: { color: CORAL, fontSize: 12, fontWeight: "800" },
   progressTrack: { height: 6, backgroundColor: colors.surfaceAlt, borderRadius: 3, overflow: "hidden", marginTop: 12 },
-  progressFill: { height: 6, borderRadius: 3, backgroundColor: CORAL },
+  progressFill: { position: "absolute", left: 0, top: 0, height: 6, borderRadius: 3, backgroundColor: CORAL },
   hint: { fontSize: 11, color: MUTED, marginTop: 8 },
+  completeNote: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 8 },
+  completeText: { fontSize: 11, fontWeight: "800", color: CORAL },
   ingredient: {
     flexDirection: "row",
     alignItems: "center",
@@ -344,6 +432,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
+  ingredientPressed: { backgroundColor: colors.surfaceAlt },
   box: {
     width: 20,
     height: 20,
@@ -353,7 +442,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  boxOn: { backgroundColor: CORAL },
   done: { textDecorationLine: "line-through", color: MUTED },
   body: { fontSize: 15, color: BROWN, lineHeight: 23 },
   step: { flexDirection: "row", gap: 12, paddingVertical: 8 },
