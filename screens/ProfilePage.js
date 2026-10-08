@@ -74,7 +74,7 @@ function GuestView() {
         <PillButton
           label="Create account"
           variant="outline"
-          onPress={() => navigation.navigate("Login", { mode: "register" })}
+          onPress={() => navigation.navigate("Register", { mode: "register" })}
         />
 
         <Pressable onPress={() => navigation.navigate("Home")}>

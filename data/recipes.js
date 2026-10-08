@@ -11,6 +11,8 @@ import {
   setDoc,
   updateDoc,
   increment,
+  runTransaction,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db, auth } from "./firebase";
 
@@ -24,8 +26,18 @@ export function getAllRecipes() {
 }
 export const incrementSearchCount = incrementViewCount;
 
-export function incrementViewCount(id) {
-  return updateDoc(doc(db, "recipes", id), { viewCount: increment(1) });
+export async function incrementViewCount(recipeId, viewerId) {
+  if (!viewerId) return false;
+  const recipeRef = doc(db, "recipes", recipeId);
+  const viewRef = doc(db, "recipes", recipeId, "views", viewerId);
+
+  return runTransaction(db, async (tx) => {
+    const seen = await tx.get(viewRef);
+    if (seen.exists()) return false; // เคยนับแล้ว ไม่นับซ้ำ
+    tx.set(viewRef, { at: serverTimestamp() });
+    tx.update(recipeRef, { viewCount: increment(1) });
+    return true;
+  });
 }
 
 export async function addRecipe(recipe) {

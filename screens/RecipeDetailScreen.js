@@ -14,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
   Easing,
-  cubicBezier,
   interpolateColor,
   useAnimatedStyle,
   useReducedMotion,
@@ -27,6 +26,7 @@ import CommentsSection from "../components/CommentsSection";
 import { FavoritesContext } from "../store/context/favorites-context";
 import { incrementViewCount } from "../data/recipes";
 import { subscribeComments } from "../data/comments";
+import { useAuth } from "../store/context/AuthContext";
 
 const CORAL = colors.accent;
 const BROWN = colors.ink;
@@ -73,10 +73,12 @@ function IngredientRow({ item, checked, onToggle }) {
   const pop = useSharedValue(1);
 
   useEffect(() => {
-    fill.set(withTiming(checked ? 1 : 0, {
-      duration: reducedMotion ? 0 : 150,
-      easing: EASE_OUT,
-    }));
+    fill.set(
+      withTiming(checked ? 1 : 0, {
+        duration: reducedMotion ? 0 : 150,
+        easing: EASE_OUT,
+      }),
+    );
     if (checked && !reducedMotion) {
       pop.set(0.92);
       pop.set(withTiming(1, { duration: 150, easing: EASE_OUT }));
@@ -84,7 +86,11 @@ function IngredientRow({ item, checked, onToggle }) {
   }, [checked, reducedMotion, fill, pop]);
 
   const boxMotion = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(fill.get(), [0, 1], [colors.white, CORAL]),
+    backgroundColor: interpolateColor(
+      fill.get(),
+      [0, 1],
+      [colors.white, CORAL],
+    ),
     transform: [{ scale: pop.get() }],
   }));
   const tickMotion = useAnimatedStyle(() => ({
@@ -103,7 +109,10 @@ function IngredientRow({ item, checked, onToggle }) {
       accessibilityRole="checkbox"
       accessibilityLabel={item}
       accessibilityState={{ checked }}
-      style={({ pressed }) => [styles.ingredient, pressed && styles.ingredientPressed]}
+      style={({ pressed }) => [
+        styles.ingredient,
+        pressed && styles.ingredientPressed,
+      ]}
     >
       <Animated.View style={[styles.box, boxMotion]}>
         <Animated.View style={tickMotion}>
@@ -121,25 +130,37 @@ function PrepProgress({ ready, total }) {
   const progress = useSharedValue(total ? ready / total : 0);
 
   useEffect(() => {
-    progress.set(withTiming(total ? ready / total : 0, {
-      duration: reducedMotion ? 0 : 220,
-      easing: EASE_OUT,
-    }));
+    progress.set(
+      withTiming(total ? ready / total : 0, {
+        duration: reducedMotion ? 0 : 220,
+        easing: EASE_OUT,
+      }),
+    );
   }, [ready, total, reducedMotion, progress]);
 
-  const fillMotion = useAnimatedStyle(() => ({ width: trackWidth * progress.get() }));
+  const fillMotion = useAnimatedStyle(() => ({
+    width: trackWidth * progress.get(),
+  }));
 
   return (
     <View style={styles.progressWrap}>
       <View style={styles.progressHead}>
         <Text style={styles.progressTitle}>Your prep list</Text>
-        <Text style={styles.progressCount}>{ready}/{total} ready</Text>
+        <Text style={styles.progressCount}>
+          {ready}/{total} ready
+        </Text>
       </View>
-      <View style={styles.progressTrack} onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}>
+      <View
+        style={styles.progressTrack}
+        onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)}
+      >
         <Animated.View style={[styles.progressFill, fillMotion]} />
       </View>
       {ready === total ? (
-        <View style={styles.completeNote}><Ionicons name="sparkles" size={14} color={CORAL} /><Text style={styles.completeText}>All set — let's cook!</Text></View>
+        <View style={styles.completeNote}>
+          <Ionicons name="sparkles" size={14} color={CORAL} />
+          <Text style={styles.completeText}>All set — let's cook!</Text>
+        </View>
       ) : (
         <Text style={styles.hint}>Tap an ingredient as you gather it.</Text>
       )}
@@ -152,18 +173,25 @@ export default function RecipeDetailScreen({ route }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const favoritesCtx = useContext(FavoritesContext);
+  const { user } = useAuth(); // TODO: ถ้า AuthContext ใช้ชื่ออื่น (เช่น currentUser) ให้แก้ตรงนี้
   const reducedMotion = useReducedMotion();
 
   const [tab, setTab] = useState("ingredients");
   const [checked, setChecked] = useState({});
   const [commentCount, setCommentCount] = useState(0);
-  const [heartPressed, setHeartPressed] = useState(false);
+
+  const heartScale = useSharedValue(1);
+  const heartMotion = useAnimatedStyle(() => ({
+    transform: [{ scale: heartScale.get() }],
+  }));
 
   const isFavorite = favoritesCtx.ids.includes(recipe.id);
 
   useEffect(() => {
-    incrementViewCount(recipe.id).catch(() => {});
-  }, [recipe.id]);
+    // นับ view แค่ 1 ครั้งต่อ 1 user ต่อ 1 สูตร (ไม่นับเจ้าของสูตรดูเอง)
+    if (!user || user.uid === recipe.authorId) return;
+    incrementViewCount(recipe.id, user.uid).catch(() => {});
+  }, [recipe.id, recipe.authorId, user?.uid]);
 
   useEffect(() => {
     const unsub = subscribeComments(
@@ -176,6 +204,12 @@ export default function RecipeDetailScreen({ route }) {
 
   function toggleFavorite() {
     Haptics.selectionAsync().catch(() => {});
+
+    if (!user) {
+      navigation.navigate("Login"); // TODO: ชื่อ screen ต้องตรงกับที่ลงทะเบียนใน navigator
+      return;
+    }
+
     if (isFavorite) favoritesCtx.removeFavorite(recipe.id);
     else favoritesCtx.addFavorite(recipe.id);
   }
@@ -204,10 +238,7 @@ export default function RecipeDetailScreen({ route }) {
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
       >
         <View
-          style={[
-            styles.hero,
-            { backgroundColor: categoryTone(category) },
-          ]}
+          style={[styles.hero, { backgroundColor: categoryTone(category) }]}
         >
           {recipe.imageUrl ? (
             <Image
@@ -225,7 +256,9 @@ export default function RecipeDetailScreen({ route }) {
         </View>
 
         <View style={styles.sheet}>
-          <Text style={styles.eyebrow}>THE RECIPE EDIT  /  {category?.title?.toUpperCase() ?? "GOOD FOOD"}</Text>
+          <Text style={styles.eyebrow}>
+            THE RECIPE EDIT / {category?.title?.toUpperCase() ?? "GOOD FOOD"}
+          </Text>
           <Text style={styles.title}>{recipe.title}</Text>
 
           <Pressable
@@ -293,7 +326,9 @@ export default function RecipeDetailScreen({ route }) {
                   key={i}
                   item={item}
                   checked={!!checked[i]}
-                  onToggle={() => setChecked((current) => ({ ...current, [i]: !current[i] }))}
+                  onToggle={() =>
+                    setChecked((current) => ({ ...current, [i]: !current[i] }))
+                  }
                 />
               ))}
             </View>
@@ -324,15 +359,35 @@ export default function RecipeDetailScreen({ route }) {
       <Pressable
         style={[styles.roundBtn, { top: insets.top + 8, right: 14 }]}
         onPress={toggleFavorite}
-        onPressIn={() => setHeartPressed(true)}
-        onPressOut={() => setHeartPressed(false)}
+        onPressIn={() => {
+          heartScale.set(
+            withTiming(0.9, {
+              duration: reducedMotion ? 0 : 120,
+              easing: EASE_OUT,
+            }),
+          );
+        }}
+        onPressOut={() => {
+          heartScale.set(
+            withTiming(1, {
+              duration: reducedMotion ? 0 : 120,
+              easing: EASE_OUT,
+            }),
+          );
+        }}
         hitSlop={8}
         accessibilityRole="button"
-        accessibilityLabel={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        accessibilityLabel={
+          isFavorite ? "Remove from favorites" : "Add to favorites"
+        }
         accessibilityState={{ selected: isFavorite }}
       >
-        <Animated.View style={[styles.heartMotion, !reducedMotion && styles.heartTransition, heartPressed && styles.heartPressed]}>
-          <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={23} color={isFavorite ? CORAL : BROWN} />
+        <Animated.View style={heartMotion}>
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={23}
+            color={isFavorite ? CORAL : BROWN}
+          />
         </Animated.View>
       </Pressable>
     </KeyboardAvoidingView>
@@ -352,9 +407,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  heartMotion: { transform: [{ scale: 1 }] },
-  heartTransition: { transitionProperty: "transform", transitionDuration: "120ms", transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1) },
-  heartPressed: { transform: [{ scale: 0.90 }] },
   sheet: {
     backgroundColor: colors.forest,
     marginTop: -46,
@@ -364,8 +416,20 @@ const styles = StyleSheet.create({
     paddingTop: 26,
     paddingBottom: 24,
   },
-  eyebrow: { color: colors.sage, fontSize: 10, letterSpacing: 1.5, fontWeight: "900", marginBottom: 10 },
-  title: { fontSize: 30, fontWeight: "900", color: colors.white, lineHeight: 35, letterSpacing: -0.6 },
+  eyebrow: {
+    color: colors.sage,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    fontWeight: "900",
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: colors.white,
+    lineHeight: 35,
+    letterSpacing: -0.6,
+  },
   author: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 },
   avatar: {
     width: 28,
@@ -415,14 +479,43 @@ const styles = StyleSheet.create({
   tabText: { fontSize: 11, color: MUTED, fontWeight: "700" },
   tabTextActive: { color: colors.white, fontWeight: "900" },
   content: { paddingHorizontal: 20, paddingTop: 20, minHeight: 200 },
-  progressWrap: { backgroundColor: colors.white, borderRadius: 18, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.line },
-  progressHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  progressWrap: {
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  progressHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   progressTitle: { color: BROWN, fontSize: 14, fontWeight: "800" },
   progressCount: { color: CORAL, fontSize: 12, fontWeight: "800" },
-  progressTrack: { height: 6, backgroundColor: colors.surfaceAlt, borderRadius: 3, overflow: "hidden", marginTop: 12 },
-  progressFill: { position: "absolute", left: 0, top: 0, height: 6, borderRadius: 3, backgroundColor: CORAL },
+  progressTrack: {
+    height: 6,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginTop: 12,
+  },
+  progressFill: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: CORAL,
+  },
   hint: { fontSize: 11, color: MUTED, marginTop: 8 },
-  completeNote: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 8 },
+  completeNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 8,
+  },
   completeText: { fontSize: 11, fontWeight: "800", color: CORAL },
   ingredient: {
     flexDirection: "row",

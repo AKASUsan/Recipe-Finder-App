@@ -14,6 +14,46 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../store/context/AuthContext";
 
+const DANGER = "#C0392B";
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function validateEmail(email) {
+  const value = email.trim();
+  if (!value) return "Please enter your email.";
+  if (!value.includes("@")) {
+    return "Your email is missing the @ sign. Example: name@example.com";
+  }
+  if (!EMAIL_REGEX.test(value)) {
+    return "Your email looks incomplete. Example: name@example.com";
+  }
+  return null;
+}
+
+function validatePassword(password) {
+  if (!password) return "Please enter your password.";
+  return null;
+}
+
+// แปลง error code ของ Firebase เป็นภาษาที่คนทั่วไปอ่านเข้าใจ
+function friendlyError(error) {
+  switch (error?.code) {
+    case "auth/invalid-email":
+      return "That email doesn't look right. Please check it and try again.";
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+      return "Wrong email or password. Please check and try again.";
+    case "auth/user-disabled":
+      return "This account has been turned off. Please contact support.";
+    case "auth/too-many-requests":
+      return "Too many tries. Please wait a few minutes, then try again.";
+    case "auth/network-request-failed":
+      return "Can't connect to the internet. Please check your connection.";
+    default:
+      return "Something went wrong. Please try again.";
+  }
+}
+
 export default function LoginScreen() {
   const navigation = useNavigation();
   const { login } = useAuth();
@@ -21,14 +61,22 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const handleLogin = async () => {
+    const nextErrors = {
+      email: validateEmail(email),
+      password: validatePassword(password),
+    };
+    setErrors(nextErrors);
+    if (nextErrors.email || nextErrors.password) return;
+
     setLoading(true);
     try {
       await login(email.trim(), password);
       navigation.goBack();
     } catch (e) {
-      Alert.alert("Error", e.code);
+      Alert.alert("Couldn't log in", friendlyError(e));
     } finally {
       setLoading(false);
     }
@@ -45,29 +93,49 @@ export default function LoginScreen() {
 
       <Text style={styles.eyebrow}>YOUR KITCHEN AWAITS</Text>
       <Text style={styles.title}>Welcome back.</Text>
-      <Text style={styles.subtitle}>Pick up where your last great meal left off.</Text>
+      <Text style={styles.subtitle}>
+        Pick up where your last great meal left off.
+      </Text>
 
-      <View style={styles.field}>
-        <Ionicons name="mail-outline" size={18} color={colors.muted} style={styles.fieldIcon} />
+      <View style={[styles.field, errors.email && styles.fieldError]}>
+        <Ionicons
+          name="mail-outline"
+          size={18}
+          color={colors.muted}
+          style={styles.fieldIcon}
+        />
         <TextInput
           placeholder="Email"
           placeholderTextColor={colors.muted}
           autoCapitalize="none"
+          autoCorrect={false}
           keyboardType="email-address"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (errors.email) setErrors((e) => ({ ...e, email: null }));
+          }}
           style={styles.input}
         />
       </View>
+      {!!errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
-      <View style={styles.field}>
-        <Ionicons name="lock-closed-outline" size={18} color={colors.muted} style={styles.fieldIcon} />
+      <View style={[styles.field, errors.password && styles.fieldError]}>
+        <Ionicons
+          name="lock-closed-outline"
+          size={18}
+          color={colors.muted}
+          style={styles.fieldIcon}
+        />
         <TextInput
           placeholder="Password"
           placeholderTextColor={colors.muted}
           secureTextEntry={!showPassword}
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (errors.password) setErrors((e) => ({ ...e, password: null }));
+          }}
           style={styles.input}
         />
         <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={10}>
@@ -78,13 +146,18 @@ export default function LoginScreen() {
           />
         </Pressable>
       </View>
+      {!!errors.password && (
+        <Text style={styles.errorText}>{errors.password}</Text>
+      )}
 
       <Pressable
         style={[styles.button, loading && styles.buttonDisabled]}
         onPress={handleLogin}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>{loading ? "Logging in..." : "Log In"}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? "Logging in..." : "Log In"}
+        </Text>
       </Pressable>
 
       <View style={styles.footer}>
@@ -114,7 +187,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 22,
   },
-  eyebrow: { textAlign: "center", fontSize: 10, color: colors.accent, fontWeight: "800", letterSpacing: 1.5, marginBottom: 6 },
+  eyebrow: {
+    textAlign: "center",
+    fontSize: 10,
+    color: colors.accent,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    marginBottom: 6,
+  },
   title: {
     fontSize: 30,
     fontWeight: "800",
@@ -139,6 +219,8 @@ const styles = StyleSheet.create({
     height: 52,
     marginBottom: 12,
   },
+  fieldError: { borderColor: DANGER, marginBottom: 4 },
+  errorText: { color: DANGER, fontSize: 12, marginBottom: 10, marginLeft: 4 },
   fieldIcon: { marginRight: 8 },
   input: { flex: 1, fontSize: 14, color: colors.ink },
   button: {
