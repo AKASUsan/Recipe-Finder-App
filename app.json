@@ -10,6 +10,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.shylock.recipefinder",
       "adaptiveIcon": {
         "backgroundColor": "#14392F",
         "foregroundImage": "./assets/app-icon-v2.png"
@@ -17,6 +18,12 @@
     },
     "web": {
       "favicon": "./assets/app-icon-v2.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9925e48d-d366-443f-a6bb-6677ad2f7558"
+      }
+    },
+    "owner": "8suppavitch"
   }
 }

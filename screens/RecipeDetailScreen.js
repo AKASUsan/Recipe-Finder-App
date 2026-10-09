@@ -29,6 +29,7 @@ import { subscribeComments } from "../data/comments";
 import { useAuth } from "../store/context/AuthContext";
 
 const CORAL = colors.accent;
+const WHITE = colors.white;
 const BROWN = colors.ink;
 const MUTED = colors.muted;
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -86,11 +87,7 @@ function IngredientRow({ item, checked, onToggle }) {
   }, [checked, reducedMotion, fill, pop]);
 
   const boxMotion = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      fill.get(),
-      [0, 1],
-      [colors.white, CORAL],
-    ),
+    backgroundColor: interpolateColor(fill.get(), [0, 1], [WHITE, CORAL]),
     transform: [{ scale: pop.get() }],
   }));
   const tickMotion = useAnimatedStyle(() => ({
@@ -99,7 +96,7 @@ function IngredientRow({ item, checked, onToggle }) {
   }));
 
   function handlePress() {
-    Haptics.selectionAsync().catch(() => {});
+    Haptics.selectionAsync().catch(() => { });
     onToggle();
   }
 
@@ -190,20 +187,20 @@ export default function RecipeDetailScreen({ route }) {
   useEffect(() => {
     // นับ view แค่ 1 ครั้งต่อ 1 user ต่อ 1 สูตร (ไม่นับเจ้าของสูตรดูเอง)
     if (!user || user.uid === recipe.authorId) return;
-    incrementViewCount(recipe.id, user.uid).catch(() => {});
+    incrementViewCount(recipe.id, user.uid).catch(() => { });
   }, [recipe.id, recipe.authorId, user?.uid]);
 
   useEffect(() => {
     const unsub = subscribeComments(
       recipe.id,
       (list) => setCommentCount(list.length),
-      () => {},
+      () => { },
     );
     return unsub;
   }, [recipe.id]);
 
   function toggleFavorite() {
-    Haptics.selectionAsync().catch(() => {});
+    Haptics.selectionAsync().catch(() => { });
 
     if (!user) {
       navigation.navigate("Login"); // TODO: ชื่อ screen ต้องตรงกับที่ลงทะเบียนใน navigator
